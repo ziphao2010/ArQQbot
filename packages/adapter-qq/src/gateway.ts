@@ -12,6 +12,7 @@ export interface GatewayHandlers {
   onDispatch(event: string, data: unknown): void
   onReady(): void
   onError(error: Error): void
+  onClose?(): void
 }
 
 export interface GatewayOptions {
@@ -182,6 +183,8 @@ export class GatewayClient {
       this.options.handlers.onError(error)
       return
     }
+
+    this.options.handlers.onClose?.()
 
     const base = this.options.reconnectBaseMs ?? 1000
     const max = this.options.reconnectMaxMs ?? 60_000

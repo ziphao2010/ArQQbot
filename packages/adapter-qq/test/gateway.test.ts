@@ -86,4 +86,30 @@ describe('GatewayClient', () => {
     socket.emit('close', 4914)
     await expect(ready).rejects.toThrow('网关在 READY 前断开')
   })
+
+  it('已就绪后断开触发 onClose', async () => {
+    const socket = new FakeSocket()
+    const onClose = vi.fn()
+    const client = new GatewayClient({
+      url: 'ws://fake',
+      getToken: async () => 'token-1',
+      intents: 1 << 25,
+      handlers: { onDispatch: vi.fn(), onReady: vi.fn(), onError: vi.fn(), onClose },
+      socketFactory: () => socket,
+      reconnectBaseMs: 999_999,
+      reconnectMaxMs: 999_999
+    })
+
+    const ready = client.connect()
+    socket.emit('message', JSON.stringify({ op: 10, d: { heartbeat_interval: 1000 } }))
+    await Promise.resolve()
+    await Promise.resolve()
+    socket.emit('message', JSON.stringify({ op: 0, t: 'READY', d: { session_id: 'sess-1' } }))
+    await ready
+
+    socket.emit('close', 4000)
+    expect(onClose).toHaveBeenCalledTimes(1)
+
+    client.close()
+  })
 })
