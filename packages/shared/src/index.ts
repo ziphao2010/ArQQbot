@@ -1,3 +1,5 @@
 export * from './types'
 export * from './services'
 export * from './ipc'
+export * from './manifest'
+export * from './config'
