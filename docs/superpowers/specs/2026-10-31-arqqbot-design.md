@@ -232,8 +232,8 @@ discovered → enabled → activating → active ↔ error → disabled
 
 ### 6.1 连接与鉴权
 
-- AppID + AppSecret 换取 access_token，到期前 60 秒刷新。
-- 通过 WebSocket 网关接收事件；正式与沙箱使用各自 API 域名，由实例 `env` 决定。
+- 认证：优先使用当前 QQ 开放平台的 `POST https://api.bot.qq.com/app/getAppAccessToken`（`appId` + `clientSecret`）换取 access_token，并兼容旧版 `https://bots.qq.com/app/getAppAccessToken`（`appId` + `appSecret`）；响应中的 `expires_in` 可能为字符串，统一转换为数字，到期前 60 秒刷新。
+- 通过 WebSocket 网关接收事件；API 域名优先使用 `https://api.bot.qq.com`，不可用时回退到正式 `https://api.sgroup.qq.com` 或沙箱 `https://sandbox.api.sgroup.qq.com`。
 - 心跳按网关 `Hello` 下发间隔发送；断线指数退避重连（1s 起，上限 60s），优先使用 `Resume` 携带 session id 与 seq。
 - 鉴权失败、intent 未开通等错误上报为 `qq/error`，并让实例进入 `error`。
 
@@ -280,7 +280,7 @@ interface QQMessage {
 - **实例详情**：
   - 概览：连接状态、运行时长、收发消息计数、当前错误摘要。
   - 插件：已发现插件列表、启用开关、按 Schema 生成的配置表单、热重载结果提示。
-  - 日志：实时滚动、级别过滤、关键词搜索、导出 JSONL。
+  - 日志：实时滚动、级别过滤、关键词搜索、只看消息、导出 JSONL。
 - **删除实例**：二次确认，停止 Worker 后删除目录；不进入回收站。
 
 ### 7.2 视觉

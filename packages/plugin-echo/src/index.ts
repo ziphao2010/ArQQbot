@@ -21,7 +21,7 @@ export function apply(ctx: Context, config: Config): void {
         msgId: message.id
       })
     } catch (error) {
-      ctx.logger.warn('echo 插件发送失败', error, 'echo')
+      ctx.logger('echo').warn('echo 插件发送失败', error)
     }
   })
 }
