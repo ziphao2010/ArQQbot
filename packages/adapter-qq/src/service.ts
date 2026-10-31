@@ -12,9 +12,9 @@ import { MessageDeduper, normalizeQQEvent } from './message'
 import { QQSender } from './sender'
 import { TokenManager } from './token'
 
-const API_BASE: Record<InstanceEnv, string> = {
-  production: 'https://api.sgroup.qq.com',
-  sandbox: 'https://sandbox.api.sgroup.qq.com'
+const API_BASES: Record<InstanceEnv, string[]> = {
+  production: ['https://api.bot.qq.com', 'https://api.sgroup.qq.com'],
+  sandbox: ['https://api.bot.qq.com', 'https://sandbox.api.sgroup.qq.com']
 }
 
 export interface QQAdapterConfig {
@@ -26,55 +26,70 @@ export interface QQAdapterConfig {
 
 export class QQAdapter extends Service implements QQService {
   private readonly token: TokenManager
-  private readonly sender: QQSender
+  private sender?: QQSender
   private readonly deduper = new MessageDeduper()
   private readonly stats = { received: 0, sent: 0 }
-  private readonly baseUrl: string
+  private baseUrl: string
   private gateway?: GatewayClient
 
   constructor(ctx: Context, private readonly config: QQAdapterConfig) {
     super(ctx, 'qq')
-    this.baseUrl = API_BASE[config.env]
+    this.baseUrl = API_BASES[config.env][0]!
     this.token = new TokenManager({
       appId: config.appId,
       appSecret: config.appSecret
     })
-    this.sender = new QQSender({ token: this.token, baseUrl: this.baseUrl })
   }
 
   async connect(): Promise<void> {
     const accessToken = await this.token.get()
-    const response = await fetch(`${this.baseUrl}/gateway/bot`, {
-      headers: { authorization: `QQBot ${accessToken}` }
-    })
+    let lastError: unknown
 
-    if (!response.ok) {
-      throw new Error(`获取网关地址失败：HTTP ${response.status}`)
-    }
+    for (const base of API_BASES[this.config.env]) {
+      let gateway: GatewayClient | undefined
+      try {
+        const response = await fetch(`${base}/gateway/bot`, {
+          headers: { authorization: `QQBot ${accessToken}` }
+        })
 
-    const body = (await response.json()) as { url?: unknown }
-    if (typeof body.url !== 'string') {
-      throw new Error('获取网关地址失败：响应缺少 url')
-    }
-
-    this.gateway = new GatewayClient({
-      url: body.url,
-      getToken: () => this.token.get(),
-      intents: this.config.intents ?? 1 << 25,
-      handlers: {
-        onDispatch: (event, data) => this.handleDispatch(event, data),
-        onReady: () => {
-          this.ctx.emit('qq/ready')
-          this.ctx.logger.info('QQ 网关已就绪')
-        },
-        onError: (error) => {
-          this.ctx.emit('qq/error', error)
-          this.ctx.logger.error('QQ 网关错误', error, 'adapter-qq')
+        if (!response.ok) {
+          throw new Error(`获取网关地址失败：HTTP ${response.status}`)
         }
-      }
-    })
 
-    await this.gateway.connect()
+        const body = (await response.json()) as { url?: unknown }
+        if (typeof body.url !== 'string') {
+          throw new Error('获取网关地址失败：响应缺少 url')
+        }
+
+        gateway = new GatewayClient({
+          url: body.url,
+          getToken: () => this.token.get(),
+          intents: this.config.intents ?? 1 << 25,
+          handlers: {
+            onDispatch: (event, data) => this.handleDispatch(event, data),
+            onReady: () => {
+              this.ctx.emit('qq/ready')
+              this.ctx.logger.info('QQ 网关已就绪')
+            },
+            onError: (error) => {
+              this.ctx.emit('qq/error', error)
+              this.ctx.logger.error('QQ 网关错误', error, 'adapter-qq')
+            }
+          }
+        })
+
+        await gateway.connect()
+        this.baseUrl = base
+        this.sender = new QQSender({ token: this.token, baseUrl: base })
+        this.gateway = gateway
+        return
+      } catch (error) {
+        gateway?.close()
+        lastError = error
+      }
+    }
+
+    throw lastError instanceof Error ? lastError : new Error('获取网关地址失败')
   }
 
   async disconnect(): Promise<void> {
@@ -83,6 +98,7 @@ export class QQAdapter extends Service implements QQService {
   }
 
   async send(input: QQSendInput): Promise<QQSendResult> {
+    if (!this.sender) throw new Error('QQ 适配器尚未连接')
     const result = await this.sender.send(input)
     this.stats.sent += 1
     return result
