@@ -71,4 +71,20 @@ describe('TokenManager', () => {
 
     await expect(manager.get()).rejects.toBeInstanceOf(QQAuthError)
   })
+
+  it('兼容字符串 expires_in 并使用 clientSecret 请求', async () => {
+    let requestBody = ''
+    const fetchImpl = vi.fn(async (_url: unknown, init?: RequestInit) => {
+      requestBody = String(init?.body ?? '')
+      return jsonResponse({ access_token: 'token-1', expires_in: '7200' })
+    })
+    const manager = new TokenManager({
+      appId: 'app-id',
+      appSecret: 'app-secret',
+      fetchImpl: fetchImpl as unknown as typeof fetch
+    })
+
+    expect(await manager.get()).toBe('token-1')
+    expect(requestBody).toContain('"clientSecret":"app-secret"')
+  })
 })
