@@ -39,6 +39,10 @@ export class TokenManager {
     this.refreshAheadMs = options.refreshAheadMs ?? 60_000
   }
 
+  invalidate(): void {
+    this.state = undefined
+  }
+
   async get(): Promise<string> {
     if (this.state && this.state.expiresAt - this.refreshAheadMs > this.nowFn()) {
       return this.state.value
