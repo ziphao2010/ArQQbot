@@ -2202,7 +2202,7 @@ export class QQMessageModule {
     const endpoint = findEndpoint(
       scene === 'group' ? 'group.message.recall' : 'c2c.message.recall'
     )
-    const pathParams =
+    const pathParams: Record<string, string> =
       scene === 'group'
         ? { group_openid: targetId, message_id: messageId }
         : { user_openid: targetId, message_id: messageId }
