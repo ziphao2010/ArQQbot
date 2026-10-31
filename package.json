@@ -5,9 +5,10 @@
   "packageManager": "pnpm@11.7.0",
   "engines": { "node": ">=22" },
   "scripts": {
-    "build": "pnpm -r --if-present build",
+    "build": "pnpm --filter arqqbot-plugin-echo build && pnpm --filter @arqqbot/runtime build && pnpm --filter @arqqbot/desktop build",
     "test": "pnpm -r --if-present test",
-    "typecheck": "pnpm -r --if-present typecheck"
+    "typecheck": "pnpm -r --if-present typecheck",
+    "package:win": "pnpm build && pnpm --filter @arqqbot/desktop exec electron-builder --win nsis"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
