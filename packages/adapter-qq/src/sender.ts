@@ -1,4 +1,8 @@
 import type { QQSendInput, QQSendResult } from '@arqqbot/shared'
+import { QQCapabilityRegistry } from './core/capability-registry'
+import { QQApiError } from './core/errors'
+import { QQHttpClient } from './core/http-client'
+import { QQMessageModule } from './modules/messages'
 import { PassiveReplyQuota } from './quota'
 import type { TokenManager } from './token'
 
@@ -20,38 +24,40 @@ export class QQSendError extends Error {
 }
 
 export interface QQSenderOptions {
-  token: TokenManager
-  baseUrl: string
+  token?: TokenManager
+  baseUrl?: string
   fetchImpl?: typeof fetch
   now?: () => number
   maxTextLength?: number
-}
-
-function splitText(content: string, maxLength: number): string[] {
-  if (content.length <= maxLength) return [content]
-  const chunks: string[] = []
-  for (let index = 0; index < content.length; index += maxLength) {
-    chunks.push(content.slice(index, index + maxLength))
-  }
-  return chunks
+  messages?: QQMessageModule
 }
 
 export class QQSender {
-  private readonly fetchImpl: typeof fetch
-  private readonly quota: PassiveReplyQuota
-  private readonly maxTextLength: number
+  private readonly messages: QQMessageModule
 
-  constructor(private readonly options: QQSenderOptions) {
-    this.fetchImpl = options.fetchImpl ?? fetch
-    this.quota = new PassiveReplyQuota(options.now ?? Date.now)
-    this.maxTextLength = options.maxTextLength ?? 5000
-  }
+  constructor(options: QQSenderOptions) {
+    if (options.messages) {
+      this.messages = options.messages
+      return
+    }
 
-  private endpoint(input: QQSendInput): string {
-    const target = encodeURIComponent(input.targetId)
-    return input.scene === 'group'
-      ? `${this.options.baseUrl}/v2/groups/${target}/messages`
-      : `${this.options.baseUrl}/v2/users/${target}/messages`
+    if (!options.token || !options.baseUrl) {
+      throw new Error('QQSender 需要 token/baseUrl 或 messages')
+    }
+
+    const http = new QQHttpClient({
+      token: options.token,
+      baseUrls: [options.baseUrl],
+      fetchImpl: options.fetchImpl,
+      now: options.now
+    })
+    const capabilities = new QQCapabilityRegistry({ env: 'production', intents: 0 })
+    this.messages = new QQMessageModule({
+      http,
+      capabilities,
+      quota: new PassiveReplyQuota(options.now ?? Date.now),
+      maxTextLength: options.maxTextLength
+    })
   }
 
   async send(input: QQSendInput): Promise<QQSendResult> {
@@ -59,37 +65,23 @@ export class QQSender {
       throw new QQSendError('ACTIVE_MESSAGE_UNSUPPORTED', 'MVP 不支持主动消息')
     }
 
-    const accessToken = await this.options.token.get()
-    const chunks = splitText(input.content, this.maxTextLength)
-    let messageId: string | undefined
-
-    for (const chunk of chunks) {
-      if (!this.quota.consume(input.scene, input.msgId)) {
-        throw new QQSendError('QUOTA_EXCEEDED', '被动回复次数已用完')
-      }
-
-      const response = await this.fetchImpl(this.endpoint(input), {
-        method: 'POST',
-        headers: {
-          'content-type': 'application/json',
-          authorization: `QQBot ${accessToken}`
-        },
-        body: JSON.stringify({
-          content: chunk,
-          msg_type: 0,
-          msg_id: input.msgId,
-          msg_seq: this.quota.nextSeq(input.msgId)
-        })
+    try {
+      return await this.messages.send({
+        target:
+          input.scene === 'group'
+            ? { scene: 'group', groupId: input.targetId }
+            : { scene: 'c2c', userId: input.targetId },
+        content: { type: 'text', text: input.content },
+        replyTo: input.msgId
       })
-
-      const body = (await response.json().catch(() => ({}))) as { id?: unknown; message?: unknown }
-      if (!response.ok) {
-        const reason = typeof body.message === 'string' ? body.message : `HTTP ${response.status}`
-        throw new QQSendError('QQ_API_ERROR', reason, response.status)
+    } catch (error) {
+      if (error instanceof QQApiError) {
+        if (error.code === 'QUOTA_EXCEEDED') {
+          throw new QQSendError('QUOTA_EXCEEDED', error.message, error.meta.status)
+        }
+        throw new QQSendError('QQ_API_ERROR', error.message, error.meta.status)
       }
-      if (typeof body.id === 'string') messageId = body.id
+      throw error
     }
-
-    return { messageId }
   }
 }
