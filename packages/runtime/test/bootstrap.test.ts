@@ -1,0 +1,99 @@
+import { mkdtemp } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
+import { describe, expect, it, vi } from 'vitest'
+import type { PluginCatalogItem, WorkerEvent, WorkerStartConfig } from '@arqqbot/shared'
+import type { QQService } from '@arqqbot/shared'
+import { bootstrapInstance } from '../src/bootstrap'
+import type { AdapterHandle } from '@arqqbot/adapter-qq'
+
+function catalogItem(): PluginCatalogItem {
+  return {
+    manifest: {
+      id: 'demo',
+      name: 'demo',
+      version: '0.1.0',
+      displayName: 'Demo',
+      description: '',
+      schema: { type: 'object', properties: {} },
+      defaultConfig: {}
+    },
+    entryPath: '/fake/demo.js',
+    source: 'builtin'
+  }
+}
+
+describe('bootstrapInstance', () => {
+  it('启动适配器、挂载插件、上报日志并可停止', async () => {
+    const dataDir = await mkdtemp(path.join(tmpdir(), 'arqqbot-worker-'))
+    const config: WorkerStartConfig = {
+      instanceId: 'inst-1',
+      appId: 'app',
+      appSecret: 'secret',
+      env: 'sandbox',
+      dataDir,
+      catalog: [catalogItem()],
+      plugins: [{ id: 'demo', enabled: true, config: {} }]
+    }
+
+    const events: WorkerEvent[] = []
+    const disconnect = vi.fn(async () => undefined)
+    const service: QQService = {
+      send: vi.fn(async () => ({})),
+      getStats: () => ({ connected: true, received: 1, sent: 0 })
+    }
+    const adapter: AdapterHandle & { service: QQService } = {
+      service,
+      connect: vi.fn(async () => undefined),
+      disconnect
+    }
+
+    const result = await bootstrapInstance(
+      config,
+      { post: (event) => events.push(event) },
+      {
+        createAdapter: async () => adapter,
+        loadModule: async () => (ctx: any) => {
+          ctx.on('dispose', () => undefined)
+        }
+      }
+    )
+
+    expect(adapter.connect).toHaveBeenCalledTimes(1)
+    expect(events.some((event) => event.type === 'log')).toBe(true)
+    expect(events.some((event) => event.type === 'pluginState')).toBe(true)
+    expect(result.getStatus().state).toBe('running')
+    expect(result.getStatus().connected).toBe(true)
+
+    await result.stop()
+    expect(disconnect).toHaveBeenCalledTimes(1)
+    expect(result.getStatus().state).toBe('stopped')
+  })
+
+  it('适配器连接失败时不挂载插件', async () => {
+    const dataDir = await mkdtemp(path.join(tmpdir(), 'arqqbot-worker-fail-'))
+    const config: WorkerStartConfig = {
+      instanceId: 'inst-2',
+      appId: 'app',
+      appSecret: 'bad',
+      env: 'production',
+      dataDir,
+      catalog: [catalogItem()],
+      plugins: [{ id: 'demo', enabled: true, config: {} }]
+    }
+
+    const connect = vi.fn(async () => {
+      throw new Error('鉴权失败')
+    })
+
+    await expect(
+      bootstrapInstance(config, { post: () => undefined }, {
+        createAdapter: async () => ({
+          connect,
+          disconnect: vi.fn(async () => undefined)
+        })
+      })
+    ).rejects.toThrow('鉴权失败')
+    expect(connect).toHaveBeenCalledTimes(1)
+  })
+})
