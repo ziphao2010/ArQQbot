@@ -6,7 +6,7 @@ import type {
   PluginRuntimeState
 } from '@arqqbot/shared'
 
-type DisposableFork = { dispose(): void }
+type DisposableFork = { dispose(): void | Promise<void> }
 export type ModuleLoader = (entryPath: string) => Promise<unknown>
 
 export interface PluginHostOptions {
@@ -105,7 +105,7 @@ export class PluginHost {
       this.forks.set(record.id, fork)
       this.setState(record.id, 'active')
     } catch (error) {
-      fork?.dispose()
+      await fork?.dispose()
       const message = error instanceof Error ? error.message : String(error)
       this.setState(record.id, 'error', message)
       throw error
