@@ -8,8 +8,11 @@ export function previewContent(content: string, max = MAX_PREVIEW): string {
   return normalized.length <= max ? normalized : `${normalized.slice(0, max)}…`
 }
 
-export function sceneLabel(scene: 'c2c' | 'group'): string {
-  return scene === 'group' ? '群聊' : '单聊'
+export function sceneLabel(scene: QQMessage['scene']): string {
+  if (scene === 'group') return '群聊'
+  if (scene === 'c2c') return '单聊'
+  if (scene === 'guild') return '频道'
+  return '私信'
 }
 
 export function formatIncoming(message: QQMessage): string {

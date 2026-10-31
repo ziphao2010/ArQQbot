@@ -40,6 +40,31 @@ describe('bootstrapInstance', () => {
     const disconnect = vi.fn(async () => undefined)
     const service: QQService = {
       send: vi.fn(async () => ({})),
+      message: {
+        send: vi.fn(async () => ({})),
+        reply: vi.fn(async () => ({})),
+        sendStream: vi.fn(async () => ({
+          write: async () => undefined,
+          end: async () => undefined
+        })),
+        recall: vi.fn(async () => undefined)
+      },
+      media: {
+        upload: vi.fn(async () => ({ fileInfo: '' })),
+        uploadChunked: vi.fn(async () => ({ fileInfo: '' })),
+        prepareUpload: vi.fn(async () => ({
+          uploadId: '',
+          blockSize: 0,
+          parts: [],
+          raw: {}
+        })),
+        finishUpload: vi.fn(async () => ({ fileInfo: '' }))
+      },
+      request: vi.fn() as unknown as QQService['request'],
+      capabilities: {
+        list: () => [],
+        has: () => false
+      },
       getStats: () => ({ connected: true, received: 1, sent: 0 })
     }
     const adapter: AdapterHandle & { service: QQService } = {

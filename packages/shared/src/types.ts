@@ -1,5 +1,7 @@
 export type InstanceEnv = 'sandbox' | 'production'
 
+export type QQScene = 'c2c' | 'group' | 'guild' | 'dm'
+
 export type InstanceRuntimeState =
   | 'created'
   | 'starting'
@@ -157,13 +159,16 @@ export type WorkerEvent =
 
 export interface QQMessage {
   id: string
-  scene: 'c2c' | 'group'
+  scene: QQScene
   userId: string
   groupId?: string
+  guildId?: string
+  channelId?: string
   content: string
   mentions: string[]
   attachments: Array<{ contentType: string; url: string; filename?: string; size?: number }>
   timestamp: string
+  author?: { id: string; name?: string; bot?: boolean }
   raw: unknown
 }
 

@@ -1,4 +1,5 @@
 export * from './types'
+export * from './qq'
 export * from './services'
 export * from './ipc'
 export * from './manifest'
