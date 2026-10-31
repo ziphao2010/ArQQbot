@@ -1,12 +1,6 @@
 import type { Context } from 'cordis'
 import type { QQMessage } from '@arqqbot/shared'
 
-declare module 'cordis' {
-  interface Events {
-    'qq/message': (message: QQMessage) => void
-  }
-}
-
 export interface Config {
   prefix: string
 }
