@@ -10,6 +10,7 @@ export const inject = ['qq']
 
 export function apply(ctx: Context, config: Config): void {
   ctx.on('qq/message', async (message: QQMessage) => {
+    if (message.scene !== 'group' && message.scene !== 'c2c') return
     const targetId = message.scene === 'group' ? message.groupId : message.userId
     if (!targetId) return
 
