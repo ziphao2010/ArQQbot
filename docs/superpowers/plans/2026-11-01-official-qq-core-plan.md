@@ -83,7 +83,9 @@ pnpm -r typecheck
 写入 `packages/shared/src/qq.ts`：
 
 ```ts
-import type { QQScene } from './types'
+import type { QQScene, QQSendResult } from './types'
+
+export type { QQSendResult }
 
 export type QQHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
@@ -173,10 +175,6 @@ export interface QQStreamInput {
 export interface QQStreamHandle {
   write(chunk: string): Promise<void>
   end(): Promise<void>
-}
-
-export interface QQSendResult {
-  messageId?: string
 }
 
 export type QQMediaFileType = 1 | 2 | 3 | 4
