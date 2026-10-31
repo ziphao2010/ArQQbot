@@ -22,6 +22,7 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [level, setLevel] = useState<'all' | LogLevel>('all')
   const [search, setSearch] = useState('')
+  const [onlyMessages, setOnlyMessages] = useState(false)
   const [error, setError] = useState<string>()
 
   async function refresh(): Promise<void> {
@@ -111,7 +112,11 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
       keyword.length === 0 ||
       entry.message.toLowerCase().includes(keyword) ||
       (entry.pluginId ?? '').toLowerCase().includes(keyword)
-    return levelMatches && searchMatches
+    const messageMatches =
+      !onlyMessages ||
+      entry.message.startsWith('收到') ||
+      entry.message.startsWith('已发送')
+    return levelMatches && searchMatches && messageMatches
   })
 
   return (
@@ -227,6 +232,14 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
               value={search}
               onChange={(event) => setSearch(event.target.value)}
             />
+            <label className="flex items-center gap-2 text-sm text-neutral-600">
+              <input
+                type="checkbox"
+                checked={onlyMessages}
+                onChange={(event) => setOnlyMessages(event.target.checked)}
+              />
+              只看消息
+            </label>
             <button className="text-sm text-[#0071e3]" onClick={exportLogs}>
               导出 JSONL
             </button>
@@ -240,7 +253,17 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
                   [{entry.level}]
                 </span>{' '}
                 {entry.pluginId && <span className="text-violet-300">[{entry.pluginId}] </span>}
-                {entry.message}
+                <span
+                  className={
+                    entry.message.startsWith('收到')
+                      ? 'text-sky-200'
+                      : entry.message.startsWith('已发送')
+                        ? 'text-green-300'
+                        : undefined
+                  }
+                >
+                  {entry.message}
+                </span>
               </div>
             ))}
           </div>

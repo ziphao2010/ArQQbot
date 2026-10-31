@@ -8,6 +8,7 @@ import type {
   QQStats
 } from '@arqqbot/shared'
 import { GatewayClient } from './gateway'
+import { formatIncoming, formatOutgoing } from './log-format'
 import { MessageDeduper, normalizeQQEvent } from './message'
 import { QQSender } from './sender'
 import { TokenManager } from './token'
@@ -29,12 +30,14 @@ export class QQAdapter extends Service implements QQService {
   private sender?: QQSender
   private readonly deduper = new MessageDeduper()
   private readonly stats = { received: 0, sent: 0 }
+  private readonly log: ReturnType<Context['logger']>
   private baseUrl: string
   private gateway?: GatewayClient
 
   constructor(ctx: Context, private readonly config: QQAdapterConfig) {
     super(ctx, 'qq')
     this.baseUrl = API_BASES[config.env][0]!
+    this.log = ctx.logger('qq-adapter')
     this.token = new TokenManager({
       appId: config.appId,
       appSecret: config.appSecret
@@ -69,11 +72,11 @@ export class QQAdapter extends Service implements QQService {
             onDispatch: (event, data) => this.handleDispatch(event, data),
             onReady: () => {
               this.ctx.emit('qq/ready')
-              this.ctx.logger.info('QQ 网关已就绪')
+              this.log.info('QQ 网关已就绪')
             },
             onError: (error) => {
               this.ctx.emit('qq/error', error)
-              this.ctx.logger.error('QQ 网关错误', error, 'adapter-qq')
+              this.log.error('QQ 网关错误', error)
             }
           }
         })
@@ -99,9 +102,15 @@ export class QQAdapter extends Service implements QQService {
 
   async send(input: QQSendInput): Promise<QQSendResult> {
     if (!this.sender) throw new Error('QQ 适配器尚未连接')
-    const result = await this.sender.send(input)
-    this.stats.sent += 1
-    return result
+    try {
+      const result = await this.sender.send(input)
+      this.stats.sent += 1
+      this.log.info(formatOutgoing(input, result))
+      return result
+    } catch (error) {
+      this.log.warn(`发送${input.scene === 'group' ? '群聊' : '单聊'}消息失败`, error)
+      throw error
+    }
   }
 
   getStats(): QQStats {
@@ -114,11 +123,18 @@ export class QQAdapter extends Service implements QQService {
 
   private handleDispatch(event: string, data: unknown): void {
     const message: QQMessage | null = normalizeQQEvent(event, data as Record<string, any>)
-    if (!message) return
-    if (this.deduper.seen(message.id)) return
+    if (!message) {
+      this.log.info(`收到暂未处理的 QQ 事件：${event}`)
+      return
+    }
+    if (this.deduper.seen(message.id)) {
+      this.log.warn(`忽略重复消息：${message.id}`)
+      return
+    }
     this.stats.received += 1
+    this.log.info(formatIncoming(message))
     void this.ctx.parallel('qq/message', message).catch((error) => {
-      this.ctx.logger.error('插件处理消息失败', error, 'adapter-qq')
+      this.log.error('插件处理消息失败', error)
     })
   }
 }
