@@ -1,0 +1,40 @@
+{
+  "name": "arqqbot-plugin-echo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --platform node --out-dir dist --external cordis",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "arqqbot": {
+    "id": "echo",
+    "displayName": "回显插件",
+    "description": "把收到的消息加上前缀后回复，用于验证消息全链路",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "title": "回复前缀",
+          "default": "收到："
+        }
+      }
+    },
+    "defaultConfig": {
+      "prefix": "收到："
+    }
+  },
+  "dependencies": {
+    "@arqqbot/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "cordis": "4.0.0-rc.12",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
