@@ -64,6 +64,9 @@ importers:
 
   packages/runtime:
     dependencies:
+      '@arqqbot/adapter-qq':
+        specifier: workspace:*
+        version: link:../adapter-qq
       '@arqqbot/shared':
         specifier: workspace:*
         version: link:../shared
