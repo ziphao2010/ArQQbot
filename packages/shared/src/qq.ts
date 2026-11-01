@@ -214,3 +214,118 @@ export interface QQChannelPayload {
 }
 
 export type QQMessageScene = QQScene
+
+export interface QQPageQuery {
+  cursor?: string
+  limit?: number
+  [key: string]: string | number | boolean | undefined
+}
+
+export type QQGroupInfo = Record<string, unknown>
+export type QQGroupBotState = Record<string, unknown>
+export type QQMuteSetting = Record<string, unknown>
+
+export interface QQGroupMember {
+  member_openid: string
+  username?: string
+  member_role?: string
+  bot?: boolean
+  joined_at?: string
+  union_openid?: string
+  [key: string]: unknown
+}
+
+export interface QQGroupMembers {
+  members: QQGroupMember[]
+  next_cursor?: string
+  [key: string]: unknown
+}
+
+export interface QQJoinRequest {
+  join_request_id?: string
+  risk_tips?: string
+  union_openid?: string
+  member_openid?: string
+  username?: string
+  apply_at?: string
+  apply_source?: string
+  invited_by?: string
+  bot?: boolean
+  verify_info?: Record<string, unknown>
+  [key: string]: unknown
+}
+
+export interface QQJoinRequestList {
+  list: QQJoinRequest[]
+  next_cursor?: string
+  [key: string]: unknown
+}
+
+export interface QQJoinStrategy {
+  strategy_id?: string
+  is_enable?: string
+  expire_at?: string
+  remark?: string
+  group_openids?: string[]
+  group_ids?: number[]
+  [key: string]: unknown
+}
+
+export type QQBlacklistEntry = Record<string, unknown>
+
+export interface QQBlacklistUpdate {
+  op: 'add' | 'del'
+  member_openids: string[]
+  [key: string]: unknown
+}
+
+export interface QQMuteMember {
+  op: string
+  member_openid: string
+  mute_expire_at?: string
+  [key: string]: unknown
+}
+
+export interface QQMuteInput {
+  members: QQMuteMember[]
+  [key: string]: unknown
+}
+
+export type QQGuild = Record<string, unknown>
+
+export interface QQChannel {
+  id?: string
+  guild_id?: string
+  name?: string
+  type?: number
+  [key: string]: unknown
+}
+
+export interface QQChannelInput {
+  name: string
+  type: number
+  [key: string]: unknown
+}
+
+export type QQMenu = Record<string, unknown>
+export type QQPanel = Record<string, unknown>
+export type QQPanelInput = Record<string, unknown>
+
+export interface QQPanelTarget {
+  op: 'add' | 'del'
+  user_openids?: string[]
+  group_openids?: string[]
+  [key: string]: unknown
+}
+
+export interface QQInteractionResponse {
+  code?: number
+  [key: string]: unknown
+}
+
+export type QQBotInfo = Record<string, unknown>
+
+export interface QQUrlLinkInput {
+  callback_data?: string
+  [key: string]: unknown
+}

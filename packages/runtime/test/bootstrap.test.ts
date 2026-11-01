@@ -60,6 +60,54 @@ describe('bootstrapInstance', () => {
         })),
         finishUpload: vi.fn(async () => ({ fileInfo: '' }))
       },
+      group: {
+        info: vi.fn(async () => ({})),
+        botState: vi.fn(async () => ({})),
+        members: vi.fn(async () => ({ members: [] })),
+        member: vi.fn(async () => ({ member_openid: '' })),
+        removeMembers: vi.fn(async () => undefined),
+        joinRequests: vi.fn(async () => ({ list: [] })),
+        approveJoinRequest: vi.fn(async () => undefined),
+        createJoinStrategy: vi.fn(async () => ({})),
+        updateJoinStrategy: vi.fn(async () => ({})),
+        executeJoinStrategy: vi.fn(async () => undefined),
+        setJoinStrategyWhitelist: vi.fn(async () => undefined),
+        listJoinStrategies: vi.fn(async () => []),
+        deleteJoinStrategy: vi.fn(async () => undefined),
+        blacklist: vi.fn(async () => []),
+        updateBlacklist: vi.fn(async () => undefined),
+        muteSetting: vi.fn(async () => ({})),
+        setMute: vi.fn(async () => undefined)
+      },
+      guild: {
+        get: vi.fn(async () => ({})),
+        channels: vi.fn(async () => []),
+        channel: vi.fn(async () => ({})),
+        createChannel: vi.fn(async () => ({})),
+        updateChannel: vi.fn(async () => ({})),
+        deleteChannel: vi.fn(async () => undefined)
+      },
+      interaction: {
+        respond: vi.fn(async () => undefined)
+      },
+      menu: {
+        get: vi.fn(async () => ({})),
+        set: vi.fn(async () => undefined)
+      },
+      panels: {
+        list: vi.fn(async () => []),
+        create: vi.fn(async () => ({})),
+        get: vi.fn(async () => ({})),
+        update: vi.fn(async () => ({})),
+        delete: vi.fn(async () => undefined),
+        updateTarget: vi.fn(async () => undefined)
+      },
+      bot: {
+        me: vi.fn(async () => ({})),
+        guilds: vi.fn(async () => []),
+        gateway: vi.fn(async () => ''),
+        generateUrlLink: vi.fn(async () => '')
+      },
       request: vi.fn() as unknown as QQService['request'],
       capabilities: {
         list: () => [],
