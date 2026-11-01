@@ -3,6 +3,7 @@ import {
   IPC_CHANNELS,
   createInstanceSchema,
   idSchema,
+  qqUpdateIntentsSchema,
   updateInstanceSchema,
   updatePluginConfigSchema
 } from '@arqqbot/shared'
@@ -33,6 +34,14 @@ export function registerIpc(manager: InstanceManager): void {
   ipcMain.handle(IPC_CHANNELS.instanceStatus, (_event, id: unknown) =>
     manager.status(idSchema.parse(id))
   )
+
+  ipcMain.handle(IPC_CHANNELS.qqCapabilities, (_event, id: unknown) =>
+    manager.capabilities(idSchema.parse(id))
+  )
+  ipcMain.handle(IPC_CHANNELS.qqUpdateIntents, (_event, input: unknown) => {
+    const parsed = qqUpdateIntentsSchema.parse(input)
+    return manager.updateIntents(parsed.instanceId, parsed.intents)
+  })
 
   ipcMain.handle(IPC_CHANNELS.pluginsList, (_event, id: unknown) =>
     manager.listPlugins(idSchema.parse(id))

@@ -1,6 +1,17 @@
-import type { QQScene, QQSendResult } from './types'
+import type { QQIntentName, QQScene, QQSendResult } from './types'
 
-export type { QQSendResult }
+export type { QQIntentName, QQSendResult }
+
+export const QQ_INTENT_NAMES = [
+  'public_messages',
+  'interaction',
+  'guilds',
+  'guild_members',
+  'guild_messages',
+  'direct_message'
+] as const satisfies readonly QQIntentName[]
+
+export const QQ_DEFAULT_INTENTS: QQIntentName[] = ['public_messages']
 
 export type QQHttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 
@@ -14,14 +25,6 @@ export type QQApiErrorCode =
   | 'BAD_REQUEST'
   | 'SERVER_ERROR'
   | 'NETWORK_ERROR'
-
-export type QQIntentName =
-  | 'public_messages'
-  | 'interaction'
-  | 'guilds'
-  | 'guild_members'
-  | 'guild_messages'
-  | 'direct_message'
 
 export type QQDomainEventName =
   | 'qq/raw-event'
@@ -164,6 +167,14 @@ export interface QQCapabilityInfo {
 export interface QQCapabilityRegistry {
   list(): QQCapabilityInfo[]
   has(id: string): boolean
+}
+
+export interface QQCapabilitySnapshot {
+  instanceId: string
+  intents: QQIntentName[]
+  capabilities: QQCapabilityInfo[]
+  running: boolean
+  reason?: string
 }
 
 export interface QQGroupLifecyclePayload {

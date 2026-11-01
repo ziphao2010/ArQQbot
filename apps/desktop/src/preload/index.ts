@@ -34,6 +34,12 @@ const api: DesktopApi = {
       ipcRenderer.on(IPC_CHANNELS.logsEntry, listener)
       return () => ipcRenderer.removeListener(IPC_CHANNELS.logsEntry, listener)
     }
+  },
+  qq: {
+    capabilities: (instanceId) =>
+      ipcRenderer.invoke(IPC_CHANNELS.qqCapabilities, instanceId),
+    updateIntents: (instanceId, intents) =>
+      ipcRenderer.invoke(IPC_CHANNELS.qqUpdateIntents, { instanceId, intents })
   }
 }
 

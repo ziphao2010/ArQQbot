@@ -9,6 +9,7 @@ const summary: InstanceSummary = {
   name: '测试实例',
   appId: '10001',
   env: 'sandbox',
+  intents: ['public_messages'],
   createdAt: '2026-10-31T00:00:00.000Z',
   updatedAt: '2026-10-31T00:00:00.000Z',
   state: 'running',

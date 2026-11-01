@@ -2,6 +2,7 @@ import type {
   InstanceStatus,
   LogEntry,
   PluginRuntimeState,
+  QQCapabilityInfo,
   WorkerEvent,
   WorkerRequest,
   WorkerStartConfig
@@ -106,6 +107,11 @@ export class WorkerSupervisor {
     await this.request({ type: 'getStatus', requestId: this.nextId() })
     if (!this.lastStatus) throw new Error('Worker 未上报状态')
     return this.lastStatus
+  }
+
+  async getCapabilities(): Promise<QQCapabilityInfo[]> {
+    const result = await this.request({ type: 'getCapabilities', requestId: this.nextId() })
+    return Array.isArray(result) ? (result as QQCapabilityInfo[]) : []
   }
 
   dispose(): void {

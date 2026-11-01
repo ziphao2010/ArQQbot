@@ -1,12 +1,41 @@
 import { useEffect, useState } from 'react'
-import type { InstanceStatus, LogEntry, LogLevel, PluginSummary } from '@arqqbot/shared'
+import type {
+  InstanceStatus,
+  LogEntry,
+  LogLevel,
+  PluginSummary,
+  QQCapabilityInfo,
+  QQCapabilitySnapshot,
+  QQIntentName
+} from '@arqqbot/shared'
 import { SchemaForm } from '../components/SchemaForm'
 
 const TABS = [
   { id: 'overview', label: '概览' },
   { id: 'plugins', label: '插件' },
+  { id: 'capabilities', label: '能力' },
   { id: 'logs', label: '日志' }
 ] as const
+
+const INTENT_OPTIONS: ReadonlyArray<{ id: QQIntentName; label: string; hint: string }> = [
+  { id: 'public_messages', label: '群聊/单聊消息', hint: '群 @、单聊、好友与群成员事件' },
+  { id: 'interaction', label: '互动回调', hint: '按钮互动、订阅状态' },
+  { id: 'guilds', label: '频道', hint: '频道与子频道事件' },
+  { id: 'guild_members', label: '频道成员', hint: '频道成员变更事件' },
+  { id: 'guild_messages', label: '频道消息', hint: '频道消息事件' },
+  { id: 'direct_message', label: '频道私信', hint: '频道私信事件' }
+]
+
+const MODULE_LABELS: Record<string, string> = {
+  message: '消息',
+  media: '富媒体',
+  group: '群管理',
+  guild: '频道',
+  interaction: '互动',
+  menu: '菜单',
+  panels: '指令面板',
+  bot: '机器人'
+}
 
 type TabId = (typeof TABS)[number]['id']
 
@@ -19,6 +48,9 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
   const [tab, setTab] = useState<TabId>('overview')
   const [status, setStatus] = useState<InstanceStatus>()
   const [plugins, setPlugins] = useState<PluginSummary[]>([])
+  const [capabilities, setCapabilities] = useState<QQCapabilitySnapshot>()
+  const [intentDraft, setIntentDraft] = useState<QQIntentName[]>()
+  const [intentMessage, setIntentMessage] = useState<string>()
   const [logs, setLogs] = useState<LogEntry[]>([])
   const [level, setLevel] = useState<'all' | LogLevel>('all')
   const [search, setSearch] = useState('')
@@ -27,12 +59,15 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
 
   async function refresh(): Promise<void> {
     try {
-      const [nextStatus, nextPlugins] = await Promise.all([
+      const [nextStatus, nextPlugins, nextCapabilities] = await Promise.all([
         window.arqqbot.instances.status(instanceId),
-        window.arqqbot.plugins.list(instanceId)
+        window.arqqbot.plugins.list(instanceId),
+        window.arqqbot.qq.capabilities(instanceId)
       ])
       setStatus(nextStatus)
       setPlugins(nextPlugins)
+      setCapabilities(nextCapabilities)
+      setIntentDraft((previous) => previous ?? nextCapabilities.intents)
       setError(undefined)
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause))
@@ -40,6 +75,9 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
   }
 
   useEffect(() => {
+    setCapabilities(undefined)
+    setIntentDraft(undefined)
+    setIntentMessage(undefined)
     void refresh()
     const timer = setInterval(() => void refresh(), 3000)
     return () => clearInterval(timer)
@@ -94,6 +132,27 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
     }
   }
 
+  function toggleIntent(intent: QQIntentName): void {
+    setIntentDraft((previous) => {
+      const current = previous ?? capabilities?.intents ?? []
+      return current.includes(intent)
+        ? current.filter((item) => item !== intent)
+        : [...current, intent]
+    })
+    setIntentMessage(undefined)
+  }
+
+  async function saveIntents(): Promise<void> {
+    setIntentMessage(undefined)
+    try {
+      await window.arqqbot.qq.updateIntents(instanceId, intentDraft ?? capabilities?.intents ?? [])
+      setIntentMessage('已保存，重启实例后生效')
+      await refresh()
+    } catch (cause) {
+      setIntentMessage(cause instanceof Error ? cause.message : String(cause))
+    }
+  }
+
   function exportLogs(): void {
     const content = visibleLogs.map((entry) => JSON.stringify(entry)).join('\n')
     const url = URL.createObjectURL(new Blob([content], { type: 'application/jsonl' }))
@@ -118,6 +177,14 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
       entry.message.startsWith('已发送')
     return levelMatches && searchMatches && messageMatches
   })
+
+  const capabilityGroups: Record<string, QQCapabilityInfo[]> = {}
+  for (const item of capabilities?.capabilities ?? []) {
+    const bucket = capabilityGroups[item.module] ?? []
+    bucket.push(item)
+    capabilityGroups[item.module] = bucket
+  }
+  const selectedIntents = intentDraft ?? capabilities?.intents ?? []
 
   return (
     <section className="space-y-6">
@@ -210,6 +277,111 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
               onChanged={() => void refresh()}
             />
           ))}
+        </div>
+      )}
+
+      {tab === 'capabilities' && (
+        <div className="space-y-4">
+          <div className="rounded-3xl bg-white/70 p-6 shadow-sm ring-1 ring-black/5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="font-semibold">WebSocket 与 intents</h3>
+                <p className="mt-1 text-sm text-neutral-500">
+                  连接：{status?.connected ? '已连接' : '未连接'} · 已订阅{' '}
+                  {selectedIntents.length} 项
+                </p>
+              </div>
+              <button
+                className="rounded-full bg-[#0071e3] px-4 py-2 text-sm font-medium text-white"
+                onClick={saveIntents}
+              >
+                保存 intents
+              </button>
+            </div>
+            <div className="mt-4 grid gap-2 md:grid-cols-2">
+              {INTENT_OPTIONS.map((option) => (
+                <label
+                  key={option.id}
+                  className="flex cursor-pointer items-start gap-3 rounded-2xl bg-black/[0.03] p-3"
+                >
+                  <input
+                    type="checkbox"
+                    className="mt-1"
+                    checked={selectedIntents.includes(option.id)}
+                    onChange={() => toggleIntent(option.id)}
+                  />
+                  <span>
+                    <span className="block text-sm font-medium">{option.label}</span>
+                    <span className="mt-0.5 block text-xs text-neutral-500">
+                      {option.id} · {option.hint}
+                    </span>
+                  </span>
+                </label>
+              ))}
+            </div>
+            {intentMessage && <p className="mt-3 text-xs text-neutral-500">{intentMessage}</p>}
+          </div>
+
+          {capabilities && !capabilities.running && (
+            <div className="rounded-3xl bg-white/70 p-6 text-sm text-neutral-500 shadow-sm ring-1 ring-black/5">
+              {capabilities.reason ?? '实例未运行，启动后可查看能力状态'}
+            </div>
+          )}
+
+          {capabilities?.running && Object.keys(capabilityGroups).length === 0 && (
+            <div className="rounded-3xl bg-white/70 p-6 text-sm text-neutral-500 shadow-sm ring-1 ring-black/5">
+              暂无能力数据
+            </div>
+          )}
+
+          <div className="grid gap-4 md:grid-cols-2">
+            {Object.entries(capabilityGroups).map(([module, items]) => {
+              const available = items.filter((item) => item.available).length
+              const endpoints = items.reduce((sum, item) => sum + item.endpointCount, 0)
+              return (
+                <div
+                  key={module}
+                  className="rounded-3xl bg-white/70 p-6 shadow-sm ring-1 ring-black/5"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold">{MODULE_LABELS[module] ?? module}</h3>
+                    <span className="text-xs text-neutral-500">
+                      {available}/{items.length} 可用 · {endpoints} 端点
+                    </span>
+                  </div>
+                  <div className="mt-4 space-y-2">
+                    {items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-start justify-between gap-3 rounded-2xl bg-black/[0.03] p-3"
+                      >
+                        <div>
+                          <p className="text-sm font-medium">{item.id}</p>
+                          {item.requiredIntents.length > 0 && (
+                            <p className="mt-1 text-xs text-neutral-500">
+                              需要 {item.requiredIntents.join('、')}
+                            </p>
+                          )}
+                          {item.reason && (
+                            <p className="mt-1 text-xs text-red-600">{item.reason}</p>
+                          )}
+                        </div>
+                        <span
+                          className={`shrink-0 rounded-full px-2 py-0.5 text-xs ${
+                            item.available
+                              ? 'bg-green-50 text-green-700'
+                              : 'bg-red-50 text-red-600'
+                          }`}
+                        >
+                          {item.available ? '可用' : '不可用'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
         </div>
       )}
 

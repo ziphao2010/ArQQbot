@@ -6,6 +6,7 @@ import type {
   PluginSummary,
   UpdateInstanceInput
 } from './types'
+import type { QQCapabilitySnapshot, QQIntentName } from './qq'
 
 export interface DesktopApi {
   instances: {
@@ -28,5 +29,9 @@ export interface DesktopApi {
     subscribe(instanceId: string): void
     unsubscribe(instanceId: string): void
     onEntry(callback: (payload: { instanceId: string; entry: LogEntry }) => void): () => void
+  }
+  qq: {
+    capabilities(instanceId: string): Promise<QQCapabilitySnapshot>
+    updateIntents(instanceId: string, intents: QQIntentName[]): Promise<void>
   }
 }

@@ -3,6 +3,7 @@ import path from 'node:path'
 import type {
   InstanceStatus,
   PluginRuntimeState,
+  QQIntentName,
   WorkerStartConfig
 } from '@arqqbot/shared'
 import { createAdapter, type AdapterHandle } from '@arqqbot/adapter-qq'
@@ -18,6 +19,7 @@ export interface BootstrapDeps {
     appId: string
     appSecret: string
     env: WorkerStartConfig['env']
+    intents?: QQIntentName[]
   }) => Promise<AdapterHandle>
   loadModule?: ModuleLoader
 }
@@ -73,7 +75,8 @@ export async function bootstrapInstance(
   const adapterConfig = {
     appId: config.appId,
     appSecret: config.appSecret,
-    env: config.env
+    env: config.env,
+    intents: config.intents
   }
 
   const adapter = deps.createAdapter

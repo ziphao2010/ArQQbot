@@ -11,6 +11,8 @@ import type {
   PluginRecord,
   PluginRuntimeState,
   PluginSummary,
+  QQCapabilitySnapshot,
+  QQIntentName,
   UpdateInstanceInput
 } from '@arqqbot/shared'
 import { scanPluginCatalog } from '@arqqbot/shared/node'
@@ -68,6 +70,7 @@ export class InstanceManager {
       name: record.name,
       appId: record.appId,
       env: record.env,
+      intents: record.intents,
       createdAt: record.createdAt,
       updatedAt: record.updatedAt,
       state: this.stateOf(record.id),
@@ -85,21 +88,30 @@ export class InstanceManager {
       name: input.name,
       appId: input.appId,
       secretRef: this.options.secretCodec.encrypt(input.appSecret),
-      env: input.env
+      env: input.env,
+      intents: input.intents
     })
     this.states.set(record.id, 'stopped')
     return this.summary(record)
   }
 
   async update(id: string, input: UpdateInstanceInput): Promise<InstanceSummary> {
-    const patch: Partial<Pick<InstanceRecord, 'name' | 'appId' | 'secretRef' | 'env'>> = {}
+    const patch: Partial<
+      Pick<InstanceRecord, 'name' | 'appId' | 'secretRef' | 'env' | 'intents'>
+    > = {}
     if (input.name !== undefined) patch.name = input.name
     if (input.appId !== undefined) patch.appId = input.appId
     if (input.env !== undefined) patch.env = input.env
+    if (input.intents !== undefined) patch.intents = input.intents
     if (input.appSecret !== undefined) patch.secretRef = this.options.secretCodec.encrypt(input.appSecret)
 
     const record = await this.store.update(id, patch)
-    if (input.appId !== undefined || input.env !== undefined || input.appSecret !== undefined) {
+    if (
+      input.appId !== undefined ||
+      input.env !== undefined ||
+      input.appSecret !== undefined ||
+      input.intents !== undefined
+    ) {
       this.requiresRestart.add(id)
     }
     return this.summary(record)
@@ -156,6 +168,7 @@ export class InstanceManager {
         appId: record.appId,
         appSecret: this.options.secretCodec.decrypt(record.secretRef),
         env: record.env,
+        intents: record.intents,
         dataDir: path.join(this.options.rootDir, 'instances', id, 'data'),
         catalog,
         plugins
@@ -209,6 +222,44 @@ export class InstanceManager {
       connected: false,
       sent: 0,
       received: 0
+    }
+  }
+
+  async updateIntents(id: string, intents: QQIntentName[]): Promise<void> {
+    await this.store.update(id, { intents })
+    this.requiresRestart.add(id)
+  }
+
+  async capabilities(id: string): Promise<QQCapabilitySnapshot> {
+    const record = await this.store.get(id)
+    if (!record) throw new Error(`实例不存在：${id}`)
+
+    const supervisor = this.supervisors.get(id)
+    if (!supervisor) {
+      return {
+        instanceId: id,
+        intents: record.intents,
+        capabilities: [],
+        running: false,
+        reason: '实例未运行，启动后可查看能力状态'
+      }
+    }
+
+    try {
+      return {
+        instanceId: id,
+        intents: record.intents,
+        capabilities: await supervisor.getCapabilities(),
+        running: this.stateOf(id) === 'running'
+      }
+    } catch (error) {
+      return {
+        instanceId: id,
+        intents: record.intents,
+        capabilities: [],
+        running: this.stateOf(id) === 'running',
+        reason: error instanceof Error ? error.message : String(error)
+      }
     }
   }
 
