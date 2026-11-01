@@ -1,9 +1,7 @@
 import { app, BrowserWindow, safeStorage } from 'electron'
 import path from 'node:path'
-import { InstanceManager } from './instance-manager'
+import { InstanceManager, PluginMarketplace, createSecretCodec } from '@arqqbot/control'
 import { createElectronWorkerFactory } from './electron-worker-factory'
-import { PluginMarketplace } from './plugin-market'
-import { createSecretCodec } from './secrets'
 import { registerIpc } from './ipc'
 
 const gotLock = app.requestSingleInstanceLock()

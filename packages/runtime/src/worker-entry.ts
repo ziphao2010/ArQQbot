@@ -6,10 +6,28 @@ interface ParentPortLike {
   postMessage(message: unknown): void
 }
 
+interface NodeProcessLike {
+  parentPort?: ParentPortLike
+  send?(message: unknown): boolean
+  on(event: 'message', listener: (message: unknown) => void): void
+}
+
 function getParentPort(): ParentPortLike {
-  const port = (process as unknown as { parentPort?: ParentPortLike }).parentPort
-  if (!port) throw new Error('Worker 必须通过 Electron utilityProcess 启动')
-  return port
+  const proc = process as unknown as NodeProcessLike
+  if (proc.parentPort) return proc.parentPort
+
+  if (typeof proc.send === 'function') {
+    return {
+      postMessage: (message) => {
+        proc.send!(message)
+      },
+      on: (_event, listener) => {
+        proc.on('message', (message) => listener({ data: message }))
+      }
+    }
+  }
+
+  throw new Error('Worker 必须通过 Electron utilityProcess 或 Node IPC 启动')
 }
 
 function toErrorInfo(error: unknown, code = 'WORKER_ERROR'): ErrorInfo {

@@ -8,7 +8,7 @@ import {
   maskSecrets,
   redact,
   mergeSecretInput
-} from '../src/main/secrets'
+} from '@arqqbot/control'
 
 const schema: JsonSchema = {
   type: 'object',

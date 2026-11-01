@@ -1,5 +1,5 @@
 import { utilityProcess } from 'electron'
-import type { WorkerFactory, WorkerProcessLike } from './worker-supervisor'
+import type { WorkerFactory, WorkerProcessLike } from '@arqqbot/control'
 
 export function createElectronWorkerFactory(entryPath: string): WorkerFactory {
   return {

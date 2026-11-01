@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { WorkerRequest, WorkerStartConfig } from '@arqqbot/shared'
-import { WorkerSupervisor, type WorkerProcessLike } from '../src/main/worker-supervisor'
+import { WorkerSupervisor, type WorkerProcessLike } from '@arqqbot/control'
 
 class FakeWorker implements WorkerProcessLike {
   private handlers = new Map<string, (...args: any[]) => void>()

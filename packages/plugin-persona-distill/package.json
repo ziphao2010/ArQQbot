@@ -1,0 +1,162 @@
+{
+  "name": "arqqbot-plugin-persona-distill",
+  "version": "0.2.0",
+  "private": true,
+  "description": "人格蒸馏插件：分层记忆（个人记忆 / 会话记忆 / 用户印象），在 QQ 中与蒸馏人格长期对话",
+  "type": "module",
+  "main": "dist/index.js",
+  "license": "MIT",
+  "keywords": [
+    "arqqbot",
+    "arqqbot-plugin",
+    "qq-bot",
+    "cordis",
+    "persona",
+    "distill"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ziphao2010/ArQQbot.git",
+    "directory": "packages/plugin-persona-distill"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "arqqbot": {
+    "id": "persona-distill",
+    "displayName": "人格蒸馏",
+    "description": "蒸馏人格并带上分层长期记忆：TA 的个人记忆、会话聊天记忆、对你的印象",
+    "schema": {
+      "type": "object",
+      "required": [
+        "baseUrl",
+        "apiKey",
+        "model"
+      ],
+      "properties": {
+        "baseUrl": {
+          "type": "string",
+          "title": "模型接口地址",
+          "description": "OpenAI 兼容的基础地址，例如 https://api.deepseek.com/v1 或 http://127.0.0.1:11434/v1",
+          "default": "https://api.deepseek.com/v1"
+        },
+        "apiKey": {
+          "type": "string",
+          "title": "API Key",
+          "description": "模型服务密钥，本地 Ollama 可填任意非空值",
+          "default": "",
+          "format": "password",
+          "secret": true
+        },
+        "model": {
+          "type": "string",
+          "title": "模型名称",
+          "description": "蒸馏、对话与记忆整理都会使用这个模型",
+          "default": "deepseek-chat"
+        },
+        "temperature": {
+          "type": "number",
+          "title": "温度",
+          "description": "越高越发散，角色扮演建议 0.6-0.9",
+          "default": 0.7,
+          "minimum": 0,
+          "maximum": 1.5
+        },
+        "ownerName": {
+          "type": "string",
+          "title": "你在人格眼中的称呼",
+          "description": "留空则使用 QQ 昵称",
+          "default": ""
+        },
+        "immersion": {
+          "type": "string",
+          "title": "沉浸强度",
+          "description": "强沉浸：默认完全以本人第一人称，不自称 AI",
+          "default": "strong",
+          "enum": [
+            "strong",
+            "balanced"
+          ]
+        },
+        "maxReplyLength": {
+          "type": "number",
+          "title": "单条回复字数上限",
+          "description": "建议 300-800",
+          "default": 600,
+          "minimum": 100,
+          "maximum": 2000
+        },
+        "maxRecentMessages": {
+          "type": "number",
+          "title": "会话上下文消息条数",
+          "description": "直接进入提示词的最近聊天条数",
+          "default": 12,
+          "minimum": 2,
+          "maximum": 40
+        },
+        "memoryEnabled": {
+          "type": "boolean",
+          "title": "启用长期记忆",
+          "description": "关闭后只在会话内记得聊天，不整理长期记忆与印象",
+          "default": true
+        },
+        "memoryEveryTurns": {
+          "type": "number",
+          "title": "记忆整理间隔（轮）",
+          "description": "每聊这么多轮，调用一次模型整理记忆与对你的印象",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 20
+        },
+        "retrievalTopK": {
+          "type": "number",
+          "title": "记忆召回条数",
+          "description": "每轮最多注入多少条相关记忆",
+          "default": 8,
+          "minimum": 1,
+          "maximum": 20
+        },
+        "contextBudgetChars": {
+          "type": "number",
+          "title": "人格上下文预算（字符）",
+          "description": "超过预算会自动裁剪召回记忆",
+          "default": 6000,
+          "minimum": 2000,
+          "maximum": 20000
+        },
+        "commandPrefix": {
+          "type": "string",
+          "title": "命令前缀",
+          "default": "/"
+        }
+      }
+    },
+    "defaultConfig": {
+      "baseUrl": "https://api.deepseek.com/v1",
+      "apiKey": "",
+      "model": "deepseek-chat",
+      "temperature": 0.7,
+      "ownerName": "",
+      "immersion": "strong",
+      "maxReplyLength": 600,
+      "maxRecentMessages": 12,
+      "memoryEnabled": true,
+      "memoryEveryTurns": 3,
+      "retrievalTopK": 8,
+      "contextBudgetChars": 6000,
+      "commandPrefix": "/"
+    }
+  },
+  "dependencies": {
+    "@arqqbot/persona-core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "cordis": "4.0.0-rc.12",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}

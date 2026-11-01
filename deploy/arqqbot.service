@@ -1,0 +1,36 @@
+[Unit]
+Description=ArQQBot headless server (QQ bot instances + web console)
+Documentation=https://github.com/ziphao2010/ArQQbot/blob/main/docs/headless.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=arqqbot
+Group=arqqbot
+WorkingDirectory=/opt/arqqbot
+Environment=NODE_ENV=production
+Environment=ARQQBOT_DATA_DIR=/var/lib/arqqbot
+EnvironmentFile=-/etc/arqqbot/env
+ExecStart=/usr/bin/node dist/index.js serve \
+  --data-dir /var/lib/arqqbot \
+  --host 127.0.0.1 \
+  --port 17800 \
+  --builtin-plugins /opt/arqqbot/builtin \
+  --worker-entry /opt/arqqbot/runtime/worker-entry.cjs \
+  --web-root /opt/arqqbot/web \
+  --autostart
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=30
+
+# 只允许写数据目录
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/arqqbot
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

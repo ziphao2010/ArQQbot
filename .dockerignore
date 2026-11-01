@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+**/dist
+apps/desktop/out
+apps/desktop/release
+apps/desktop/release-local
+.git
+.github
+docs
+*.bundle
+*.log

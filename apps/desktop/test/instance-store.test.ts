@@ -2,7 +2,7 @@ import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { InstanceStore } from '../src/main/instance-store'
+import { InstanceStore } from '@arqqbot/control'
 
 describe('InstanceStore', () => {
   it('创建、更新、读写插件配置与删除实例', async () => {

@@ -1,6 +1,6 @@
 {
   "name": "@arqqbot/desktop",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "description": "ArQQBot 多实例 QQ 官方机器人桌面与插件运行时",
   "author": {
@@ -13,11 +13,13 @@
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
+    "build:web": "vite build --config vite.web.config.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "package:win": "electron-builder --win nsis"
   },
   "dependencies": {
+    "@arqqbot/control": "workspace:*",
     "@arqqbot/shared": "workspace:*",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-tabs": "^1.1.13",

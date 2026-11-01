@@ -10,8 +10,7 @@ import {
   updateInstanceSchema,
   updatePluginConfigSchema
 } from '@arqqbot/shared'
-import type { InstanceManager } from './instance-manager'
-import type { PluginMarketplace } from './plugin-market'
+import type { InstanceManager, PluginMarketplace } from '@arqqbot/control'
 
 export function registerIpc(manager: InstanceManager, marketplace: PluginMarketplace): void {
   const subscriptions = new Map<number, () => void>()

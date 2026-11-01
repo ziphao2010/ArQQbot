@@ -6,7 +6,7 @@ import path from 'node:path'
 import { create } from 'tar'
 import { afterEach, describe, expect, it } from 'vitest'
 import type { PluginMarketEntry } from '@arqqbot/shared'
-import { PluginMarketplace } from '../src/main/plugin-market'
+import { PluginMarketplace } from '@arqqbot/control'
 
 const tempDirs: string[] = []
 let fixtureSeq = 0

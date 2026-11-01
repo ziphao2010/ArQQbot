@@ -104,8 +104,53 @@ jobs:
             apps/desktop/release/latest-linux*.yml
           if-no-files-found: error
 
+  server:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.7.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build headless server bundle
+        run: |
+          pnpm --filter arqqbot-plugin-echo build
+          pnpm --filter arqqbot-plugin-persona-distill build
+          pnpm --filter @arqqbot/runtime build
+          pnpm --filter @arqqbot/desktop build:web
+          pnpm --filter @arqqbot/server build
+
+      - name: Package headless server
+        run: |
+          node scripts/package-server.mjs
+          VERSION=$(node -p "require('./apps/server/package.json').version")
+          tar -C dist-server -czf "dist-server/arqqbot-server-${VERSION}.tar.gz" arqqbot-server
+
+      - name: Upload server artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: server
+          path: dist-server/*.tar.gz
+          if-no-files-found: error
+
   release:
-    needs: [windows, linux]
+    needs: [windows, linux, server]
     runs-on: ubuntu-latest
 
     steps:

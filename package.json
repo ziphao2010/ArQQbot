@@ -1,6 +1,6 @@
 {
   "name": "arqqbot",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "license": "MIT",
   "author": "ArQQbot contributors",
@@ -22,7 +22,9 @@
   "packageManager": "pnpm@11.7.0",
   "engines": { "node": ">=22" },
   "scripts": {
-    "build": "pnpm --filter arqqbot-plugin-echo build && pnpm --filter @arqqbot/runtime build && pnpm --filter @arqqbot/desktop build",
+    "build": "pnpm --filter arqqbot-plugin-echo build && pnpm --filter arqqbot-plugin-persona-distill build && pnpm --filter @arqqbot/runtime build && pnpm --filter @arqqbot/desktop build && pnpm --filter @arqqbot/desktop build:web && pnpm --filter @arqqbot/server build",
+    "package:server": "node scripts/package-server.mjs",
+    "serve": "pnpm --filter @arqqbot/server build && node apps/server/dist/index.js serve",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
     "package:win": "pnpm build && pnpm --filter @arqqbot/desktop exec electron-builder --win nsis",

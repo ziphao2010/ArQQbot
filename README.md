@@ -84,6 +84,54 @@ pnpm package:win
 
 社区插件包名建议使用 `arqqbot-plugin-*`，并在 `package.json` 的 `keywords` 中包含 `arqqbot-plugin`。内置插件使用 `@arqqbot/plugin-*` 命名。
 
+## 无头模式（Linux 服务器 / Web 控制台 / CLI）
+
+不想开 Electron 时，可以把同一套实例管理与 Web 控制台跑在服务器的一个端口上，并用 CLI 远程管理。完整部署说明（Docker、systemd、反向代理、安全要点）见 [docs/headless.md](docs/headless.md)。
+
+```bash
+pnpm install
+pnpm build
+
+# 启动服务端（默认监听 127.0.0.1:17800）
+pnpm serve -- --host 0.0.0.0 --port 17800 --autostart
+```
+
+也可以用 Docker：
+
+```bash
+docker build -t arqqbot .
+docker run -d -p 127.0.0.1:17800:17800 -v arqqbot-data:/data arqqbot
+```
+
+- 浏览器打开启动日志里的 `http://<host>:17800/#token=xxx` 即可使用与桌面端一致的 Web 控制台。
+- 服务端使用数据目录下的 `master.key` 做 AES-256-GCM 加密；从桌面端迁移实例时需要重新填写 AppSecret。
+- 服务端默认只监听 `127.0.0.1`；对外请经 HTTPS 反向代理，不要直接暴露端口。
+
+CLI 管理（服务端保持运行，token 自动从数据目录读取）：
+
+```bash
+arqqbot health
+arqqbot instance list
+arqqbot instance create --name 我的BOT --app-id xxx --env sandbox --secret-stdin
+arqqbot instance start <id>
+arqqbot plugin list <id>
+arqqbot plugin enable <id> persona-distill
+arqqbot plugin config <id> persona-distill --file config.json
+arqqbot market search persona
+arqqbot logs <id>
+```
+
+## 人格蒸馏插件
+
+`packages/plugin-persona-distill` 基于 `packages/persona-core` 实现分层记忆：
+
+- **个人记忆（全局）**：人格自己的经历、偏好与口头禅，来自首次语料蒸馏与后续聊天整理。
+- **会话记忆**：每个会话的最近聊天与滚动摘要。
+- **用户印象**：跨会话累积的、TA 对你的认识与关系变化。
+- **强沉浸**：默认以本人第一人称回应，不自称 AI；只有被直接追问身份时才承认是人格模拟。
+
+安装后启用插件，在实例插件配置中填写模型接口即可；命令见 [插件 README](packages/plugin-persona-distill/README.md)。
+
 ## 安全说明
 
 - AppSecret 通过系统安全存储加密保存，不会以明文写入实例配置文件或日志。

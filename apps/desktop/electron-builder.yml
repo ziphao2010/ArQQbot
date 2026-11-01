@@ -11,6 +11,10 @@ extraResources:
     to: plugins/plugin-echo/package.json
   - from: ../../packages/plugin-echo/dist
     to: plugins/plugin-echo/dist
+  - from: ../../packages/plugin-persona-distill/package.json
+    to: plugins/plugin-persona-distill/package.json
+  - from: ../../packages/plugin-persona-distill/dist
+    to: plugins/plugin-persona-distill/dist
   - from: ../../packages/runtime/dist/worker-entry.cjs
     to: worker/worker-entry.cjs
 asar: true
