@@ -19,8 +19,14 @@ import { QQEventRouter } from './events/router'
 import { GatewayClient, type SocketFactory } from './gateway'
 import { formatIncoming, previewContent } from './log-format'
 import { MessageDeduper } from './message'
+import { QQBotModule } from './modules/bot'
+import { QQGuildModule } from './modules/guilds'
+import { QQGroupModule } from './modules/groups'
+import { QQInteractionModule } from './modules/interactions'
 import { QQMediaModule } from './modules/media'
+import { QQMenuModule } from './modules/menus'
 import { QQMessageModule } from './modules/messages'
+import { QQPanelModule } from './modules/panels'
 import { QQSender } from './sender'
 import { TokenManager } from './token'
 
@@ -47,6 +53,12 @@ function resolveAdapterIntents(input: number | QQIntentName[] | undefined): numb
 export class QQAdapter extends Service implements QQService {
   readonly message: QQMessageModule
   readonly media: QQMediaModule
+  readonly group: QQGroupModule
+  readonly guild: QQGuildModule
+  readonly interaction: QQInteractionModule
+  readonly menu: QQMenuModule
+  readonly panels: QQPanelModule
+  readonly bot: QQBotModule
   readonly capabilities: QQCapabilityRegistry
 
   private readonly token: TokenManager
@@ -96,6 +108,16 @@ export class QQAdapter extends Service implements QQService {
       capabilities: this.capabilities,
       fetchImpl: config.fetchImpl
     })
+
+    this.group = new QQGroupModule({ http: this.http, capabilities: this.capabilities })
+    this.guild = new QQGuildModule({ http: this.http, capabilities: this.capabilities })
+    this.interaction = new QQInteractionModule({
+      http: this.http,
+      capabilities: this.capabilities
+    })
+    this.menu = new QQMenuModule({ http: this.http, capabilities: this.capabilities })
+    this.panels = new QQPanelModule({ http: this.http, capabilities: this.capabilities })
+    this.bot = new QQBotModule({ http: this.http, capabilities: this.capabilities })
 
     this.sender = new QQSender({ messages: this.message })
 
