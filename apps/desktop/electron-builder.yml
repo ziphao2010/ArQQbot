@@ -24,6 +24,7 @@ nsis:
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
 linux:
+  executableName: arqqbot
   target:
     - AppImage
     - deb
