@@ -1,0 +1,52 @@
+name: 插件提交
+description: 提交插件以加入 ArQQbot 插件索引与社区列表
+title: "[Plugin] "
+labels: ["plugin"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        插件索引由 GitHub topic 自动发现。提交前请确认仓库已打上 topic `arqqbot-plugin`，并阅读 docs/plugin-spec.md。
+  - type: input
+    id: repo
+    attributes:
+      label: 仓库地址
+      placeholder: https://github.com/your-name/your-plugin
+    validations:
+      required: true
+  - type: input
+    id: package
+    attributes:
+      label: npm 包名
+      placeholder: arqqbot-plugin-example
+    validations:
+      required: false
+  - type: input
+    id: plugin-id
+    attributes:
+      label: 插件 id
+      description: package.json 中 arqqbot.id，需匹配 ^[a-z0-9-]+$
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 功能说明
+      description: 插件做什么、需要哪些 QQ 能力与配置项。
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 检查清单
+      options:
+        - label: 仓库已打上 GitHub topic `arqqbot-plugin`
+          required: true
+        - label: package.json 的 keywords 包含 `arqqbot-plugin`
+          required: true
+        - label: 已提供预构建 ESM 入口，运行时不依赖未打包的外部模块
+          required: true
+        - label: 已说明插件申请的 QQ 能力与潜在安全影响
+          required: true
+        - label: 我确认插件不包含恶意代码、密钥或隐私数据收集逻辑
+          required: true

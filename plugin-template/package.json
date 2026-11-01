@@ -1,0 +1,53 @@
+{
+  "name": "arqqbot-plugin-example",
+  "version": "0.1.0",
+  "description": "ArQQbot 插件模板：被动回复示例",
+  "type": "module",
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "arqqbot",
+    "arqqbot-plugin",
+    "qq-bot",
+    "cordis"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-name/arqqbot-plugin-example.git"
+  },
+  "homepage": "https://github.com/your-name/arqqbot-plugin-example#readme",
+  "bugs": {
+    "url": "https://github.com/your-name/arqqbot-plugin-example/issues"
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --platform node --out-dir dist --external cordis",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "cordis": "4.0.0-rc.12",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2"
+  },
+  "arqqbot": {
+    "id": "example",
+    "displayName": "示例插件",
+    "description": "把收到的群聊或单聊消息加上前缀后回复，用于验证插件链路",
+    "schema": {
+      "type": "object",
+      "properties": {
+        "prefix": {
+          "type": "string",
+          "title": "回复前缀",
+          "default": "收到："
+        }
+      }
+    },
+    "defaultConfig": {
+      "prefix": "收到："
+    }
+  }
+}

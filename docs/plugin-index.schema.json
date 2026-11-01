@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/Arooxy/ArQQbot/master/docs/plugin-index.schema.json",
+  "title": "ArQQbot Plugin Index",
+  "description": "ArQQbot 插件索引文件结构，version 固定为 1。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "generatedAt", "source", "plugins"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "索引格式版本。"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "索引生成时间，ISO 8601 UTC。"
+    },
+    "source": {
+      "type": "string",
+      "minLength": 1,
+      "description": "索引数据来源标识，默认索引为 github-topic:arqqbot-plugin。",
+      "examples": ["github-topic:arqqbot-plugin"]
+    },
+    "plugins": {
+      "type": "array",
+      "description": "插件条目，按 id 升序。",
+      "items": {
+        "$ref": "#/$defs/plugin"
+      }
+    }
+  },
+  "$defs": {
+    "plugin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "packageName",
+        "displayName",
+        "description",
+        "version",
+        "repo",
+        "commit",
+        "downloadUrl"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9-]+$",
+          "description": "插件 manifest 中的 arqqbot.id。"
+        },
+        "packageName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "npm 包名，社区插件通常为 arqqbot-plugin-*。"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "description": "插件 manifest 中的显示名。"
+        },
+        "description": {
+          "type": "string",
+          "description": "插件 manifest 中的描述，可为空字符串。"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "description": "插件包版本，semver。"
+        },
+        "repo": {
+          "type": "string",
+          "format": "uri",
+          "description": "插件仓库 HTML 地址。"
+        },
+        "commit": {
+          "type": "string",
+          "minLength": 1,
+          "description": "生成索引时解析到的提交 SHA；无法解析时退回分支引用。"
+        },
+        "downloadUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "插件 tarball 下载地址，固定到 commit 或 refs/heads/<branch>。"
+        },
+        "homepage": {
+          "type": "string",
+          "format": "uri",
+          "description": "插件主页。"
+        },
+        "tags": {
+          "type": "array",
+          "description": "发现用标签。",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "tarball SHA-256；当前生成器未计算时为 null。"
+        }
+      }
+    }
+  }
+}

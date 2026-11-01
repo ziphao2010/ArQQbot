@@ -4,6 +4,18 @@
   "private": true,
   "type": "module",
   "main": "dist/index.js",
+  "license": "MIT",
+  "keywords": [
+    "arqqbot",
+    "arqqbot-plugin",
+    "qq-bot",
+    "cordis"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arooxy/ArQQbot.git",
+    "directory": "packages/plugin-echo"
+  },
   "scripts": {
     "build": "tsup src/index.ts --format esm --platform node --out-dir dist --external cordis",
     "typecheck": "tsc --noEmit",
