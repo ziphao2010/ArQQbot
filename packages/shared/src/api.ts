@@ -3,6 +3,8 @@ import type {
   InstanceStatus,
   InstanceSummary,
   LogEntry,
+  PluginMarketEntry,
+  PluginMarketSnapshot,
   PluginSummary,
   UpdateInstanceInput
 } from './types'
@@ -24,6 +26,8 @@ export interface DesktopApi {
     enable(instanceId: string, pluginId: string): Promise<void>
     disable(instanceId: string, pluginId: string): Promise<void>
     updateConfig(instanceId: string, pluginId: string, config: Record<string, unknown>): Promise<void>
+    marketplace(indexUrl?: string): Promise<PluginMarketSnapshot>
+    install(entry: PluginMarketEntry): Promise<void>
   }
   logs: {
     subscribe(instanceId: string): void

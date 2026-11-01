@@ -2,6 +2,7 @@ import { app, BrowserWindow, safeStorage } from 'electron'
 import path from 'node:path'
 import { InstanceManager } from './instance-manager'
 import { createElectronWorkerFactory } from './electron-worker-factory'
+import { PluginMarketplace } from './plugin-market'
 import { createSecretCodec } from './secrets'
 import { registerIpc } from './ipc'
 
@@ -57,8 +58,10 @@ void app.whenReady().then(async () => {
     secretCodec: createSecretCodec(safeStorage)
   })
 
+  const marketplace = new PluginMarketplace({ rootDir: externalPluginRoot })
+
   await manager.init()
-  registerIpc(manager)
+  registerIpc(manager, marketplace)
   createWindow()
 
   app.on('activate', () => {

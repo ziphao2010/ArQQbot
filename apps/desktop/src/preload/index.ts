@@ -21,7 +21,10 @@ const api: DesktopApi = {
     disable: (instanceId, pluginId) =>
       ipcRenderer.invoke(IPC_CHANNELS.pluginsDisable, instanceId, pluginId),
     updateConfig: (instanceId, pluginId, config) =>
-      ipcRenderer.invoke(IPC_CHANNELS.pluginsUpdateConfig, { instanceId, pluginId, config })
+      ipcRenderer.invoke(IPC_CHANNELS.pluginsUpdateConfig, { instanceId, pluginId, config }),
+    marketplace: (indexUrl) =>
+      ipcRenderer.invoke(IPC_CHANNELS.pluginsMarketplace, indexUrl),
+    install: (entry) => ipcRenderer.invoke(IPC_CHANNELS.pluginsInstall, entry)
   },
   logs: {
     subscribe: (instanceId) => ipcRenderer.send(IPC_CHANNELS.logsSubscribe, instanceId),

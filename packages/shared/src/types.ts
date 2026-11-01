@@ -144,6 +144,28 @@ export interface PluginCatalogItem {
   source: 'builtin' | 'external'
 }
 
+export interface PluginMarketEntry {
+  id: string
+  packageName: string
+  displayName: string
+  description: string
+  version: string
+  repo?: string
+  commit?: string
+  downloadUrl: string
+  homepage?: string
+  tags?: string[]
+  sha256?: string | null
+}
+
+export interface PluginMarketSnapshot {
+  indexUrl: string
+  generatedAt?: string
+  plugins: PluginMarketEntry[]
+  installedIds: string[]
+  error?: string
+}
+
 export interface WorkerStartConfig {
   instanceId: string
   appId: string
