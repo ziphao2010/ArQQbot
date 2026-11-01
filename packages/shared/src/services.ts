@@ -1,18 +1,38 @@
 import type {} from 'cordis'
 import type { QQMessage, QQSendInput, QQSendResult, QQStats } from './types'
 import type {
+  QQBlacklistEntry,
+  QQBlacklistUpdate,
+  QQBotInfo,
   QQCapabilityRegistry,
+  QQChannel,
+  QQChannelInput,
   QQChannelPayload,
   QQChunkedUploadInput,
   QQFriendPayload,
+  QQGuild,
   QQGuildPayload,
+  QQGroupBotState,
+  QQGroupInfo,
   QQGroupJoinRequestPayload,
   QQGroupLifecyclePayload,
+  QQGroupMember,
   QQGroupMemberPayload,
+  QQGroupMembers,
   QQInteractionPayload,
+  QQInteractionResponse,
+  QQJoinRequestList,
+  QQJoinStrategy,
   QQMediaUploadInput,
+  QQMenu,
   QQMessageAuditPayload,
   QQMessageContent,
+  QQMuteInput,
+  QQMuteSetting,
+  QQPageQuery,
+  QQPanel,
+  QQPanelInput,
+  QQPanelTarget,
   QQUploadFinishInput,
   QQUploadPrepareInput,
   QQUploadSession,
@@ -21,7 +41,8 @@ import type {
   QQSendMessageInput,
   QQStreamHandle,
   QQStreamInput,
-  QQSubscribeStatusPayload
+  QQSubscribeStatusPayload,
+  QQUrlLinkInput
 } from './qq'
 
 export interface QQService {
@@ -37,6 +58,54 @@ export interface QQService {
     uploadChunked(input: QQChunkedUploadInput): Promise<QQUploadedMedia>
     prepareUpload(input: QQUploadPrepareInput): Promise<QQUploadSession>
     finishUpload(input: QQUploadFinishInput): Promise<QQUploadedMedia>
+  }
+  group: {
+    info(groupOpenid: string): Promise<QQGroupInfo>
+    botState(groupOpenid: string): Promise<QQGroupBotState>
+    members(groupOpenid: string, query?: QQPageQuery): Promise<QQGroupMembers>
+    member(groupOpenid: string, memberOpenid: string): Promise<QQGroupMember>
+    removeMembers(groupOpenid: string, memberOpenids: string[]): Promise<void>
+    joinRequests(groupOpenid: string, query?: QQPageQuery): Promise<QQJoinRequestList>
+    approveJoinRequest(groupOpenid: string, memberOpenid: string, approve: boolean): Promise<void>
+    createJoinStrategy(input: QQJoinStrategy): Promise<QQJoinStrategy>
+    updateJoinStrategy(id: string, input: Partial<QQJoinStrategy>): Promise<QQJoinStrategy>
+    executeJoinStrategy(id: string): Promise<void>
+    setJoinStrategyWhitelist(id: string, userIds: string[]): Promise<void>
+    listJoinStrategies(): Promise<QQJoinStrategy[]>
+    deleteJoinStrategy(id: string): Promise<void>
+    blacklist(groupOpenid: string): Promise<QQBlacklistEntry[]>
+    updateBlacklist(groupOpenid: string, input: QQBlacklistUpdate): Promise<void>
+    muteSetting(groupOpenid: string): Promise<QQMuteSetting>
+    setMute(groupOpenid: string, input: QQMuteInput): Promise<void>
+  }
+  guild: {
+    get(guildId: string): Promise<QQGuild>
+    channels(guildId: string): Promise<QQChannel[]>
+    channel(channelId: string): Promise<QQChannel>
+    createChannel(guildId: string, input: QQChannelInput): Promise<QQChannel>
+    updateChannel(channelId: string, input: Partial<QQChannelInput>): Promise<QQChannel>
+    deleteChannel(channelId: string): Promise<void>
+  }
+  interaction: {
+    respond(interactionId: string, payload: QQInteractionResponse): Promise<void>
+  }
+  menu: {
+    get(): Promise<QQMenu>
+    set(menu: QQMenu): Promise<void>
+  }
+  panels: {
+    list(): Promise<QQPanel[]>
+    create(input: QQPanelInput): Promise<QQPanel>
+    get(id: string): Promise<QQPanel>
+    update(id: string, input: Partial<QQPanelInput>): Promise<QQPanel>
+    delete(id: string): Promise<void>
+    updateTarget(id: string, target: QQPanelTarget): Promise<void>
+  }
+  bot: {
+    me(): Promise<QQBotInfo>
+    guilds(): Promise<QQGuild[]>
+    gateway(): Promise<string>
+    generateUrlLink(input: QQUrlLinkInput): Promise<string>
   }
   request<T>(input: QQRawRequest): Promise<T>
   capabilities: QQCapabilityRegistry
