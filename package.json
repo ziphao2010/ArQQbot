@@ -29,7 +29,7 @@
     "desktop:portable": "pnpm build && pnpm --filter @arqqbot/desktop exec electron-builder --dir --config.directories.output=release-local && node scripts/launch-portable.mjs"
   },
   "devDependencies": {
-    "typescript": "^5.9.2",
+    "typescript": "^7.0.2",
     "vitest": "^3.2.4"
   }
 }

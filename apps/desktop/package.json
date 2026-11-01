@@ -39,7 +39,7 @@
     "electron-vite": "^4.0.0",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4.1.13",
-    "typescript": "^5.9.2",
+    "typescript": "^7.0.2",
     "vite": "^7.3.7",
     "vitest": "^3.2.4"
   }
