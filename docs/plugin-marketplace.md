@@ -10,10 +10,10 @@
 默认索引由本仓库的 GitHub Actions 每周生成并提交：
 
 ```text
-https://raw.githubusercontent.com/Arooxy/ArQQbot/master/plugins/index.json
+https://raw.githubusercontent.com/ziphao2010/ArQQbot/master/plugins/index.json
 ```
 
-索引文件路径为 `plugins/index.json`，构建脚本为 `scripts/build-plugin-index.mjs`。仓库地址变更时只需替换上述 URL 中的 `Arooxy/ArQQbot`。
+索引文件路径为 `plugins/index.json`，构建脚本为 `scripts/build-plugin-index.mjs`。仓库地址变更时只需替换上述 URL 中的 `ziphao2010/ArQQbot`。
 
 ## 2. 索引 JSON 结构
 

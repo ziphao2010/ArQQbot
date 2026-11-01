@@ -13,7 +13,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Arooxy/ArQQbot.git",
+    "url": "git+https://github.com/ziphao2010/ArQQbot.git",
     "directory": "packages/plugin-echo"
   },
   "scripts": {

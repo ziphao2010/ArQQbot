@@ -8,7 +8,7 @@ import type { PluginMarketEntry, PluginMarketSnapshot } from '@arqqbot/shared'
 import { parsePluginManifest, pluginMarketEntrySchema } from '@arqqbot/shared'
 
 const DEFAULT_INDEX_URL =
-  'https://raw.githubusercontent.com/Arooxy/ArQQbot/master/plugins/index.json'
+  'https://raw.githubusercontent.com/ziphao2010/ArQQbot/master/plugins/index.json'
 const DEFAULT_TIMEOUT_MS = 10_000
 const DEFAULT_MAX_DOWNLOAD_BYTES = 20 * 1024 * 1024
 const MAX_INDEX_BYTES = 2 * 1024 * 1024
