@@ -7,8 +7,10 @@ import { extract, type ReadEntry } from 'tar'
 import type { PluginMarketEntry, PluginMarketSnapshot } from '@arqqbot/shared'
 import { parsePluginManifest, pluginMarketEntrySchema } from '@arqqbot/shared'
 
-const DEFAULT_INDEX_URL =
-  'https://raw.githubusercontent.com/ziphao2010/ArQQbot/master/plugins/index.json'
+const DEFAULT_INDEX_URLS = [
+  'https://cdn.jsdelivr.net/gh/ziphao2010/ArQQbot@main/plugins/index.json',
+  'https://raw.githubusercontent.com/ziphao2010/ArQQbot/main/plugins/index.json'
+] as const
 const DEFAULT_TIMEOUT_MS = 10_000
 const DEFAULT_MAX_DOWNLOAD_BYTES = 20 * 1024 * 1024
 const MAX_INDEX_BYTES = 2 * 1024 * 1024
@@ -29,6 +31,32 @@ function isHttpUrl(value: string): boolean {
   } catch {
     return false
   }
+}
+
+function parseRepo(repoUrl: string | undefined): { owner: string; repo: string } | undefined {
+  if (!repoUrl) return undefined
+  let parsed: URL
+  try {
+    parsed = new URL(repoUrl.replace(/^git\+/, ''))
+  } catch {
+    return undefined
+  }
+  if (parsed.hostname !== 'github.com') return undefined
+  const [owner, repo] = parsed.pathname.replace(/^\//, '').split('/')
+  if (!owner || !repo) return undefined
+  return { owner, repo: repo.replace(/\.git$/, '') }
+}
+
+function downloadCandidates(entry: PluginMarketEntry): string[] {
+  const candidates = [entry.downloadUrl]
+  const repo = parseRepo(entry.repo)
+  if (repo && entry.commit) {
+    candidates.push(
+      `https://github.com/${repo.owner}/${repo.repo}/archive/${entry.commit}.tar.gz`,
+      `https://api.github.com/repos/${repo.owner}/${repo.repo}/tarball/${entry.commit}`
+    )
+  }
+  return candidates.filter((url, index) => candidates.indexOf(url) === index)
 }
 
 function isWithinDir(parent: string, candidate: string): boolean {
@@ -71,26 +99,26 @@ function verifySha256(data: Buffer, expected: string): void {
 
 export class PluginMarketplace {
   private readonly rootDir: string
-  private readonly defaultIndexUrl: string
+  private readonly indexUrls: string[]
   private readonly fetchImpl: typeof fetch
   private readonly timeoutMs: number
   private readonly maxDownloadBytes: number
 
   constructor(options: PluginMarketplaceOptions) {
     this.rootDir = options.rootDir
-    this.defaultIndexUrl =
-      options.indexUrl?.trim() ||
-      process.env['ARQQBOT_PLUGIN_INDEX_URL']?.trim() ||
-      DEFAULT_INDEX_URL
+    const explicitIndexUrl =
+      options.indexUrl?.trim() || process.env['ARQQBOT_PLUGIN_INDEX_URL']?.trim()
+    this.indexUrls = explicitIndexUrl ? [explicitIndexUrl] : [...DEFAULT_INDEX_URLS]
     this.fetchImpl = options.fetchImpl ?? fetch
     this.timeoutMs = options.timeoutMs ?? DEFAULT_TIMEOUT_MS
     this.maxDownloadBytes = options.maxDownloadBytes ?? DEFAULT_MAX_DOWNLOAD_BYTES
   }
 
   async fetchIndex(indexUrl?: string): Promise<PluginMarketSnapshot> {
-    const resolvedIndexUrl = indexUrl?.trim() || this.defaultIndexUrl
+    const explicitIndexUrl = indexUrl?.trim()
+    const candidates = explicitIndexUrl ? [explicitIndexUrl] : this.indexUrls
     const snapshot: PluginMarketSnapshot = {
-      indexUrl: resolvedIndexUrl,
+      indexUrl: candidates[0] ?? '',
       plugins: [],
       installedIds: []
     }
@@ -101,45 +129,68 @@ export class PluginMarketplace {
       snapshot.installedIds = []
     }
 
-    if (!isHttpUrl(resolvedIndexUrl)) {
-      snapshot.error = '索引地址必须是 http/https 地址'
-      return snapshot
+    const attempted: string[] = []
+    let lastError = '索引请求失败'
+    for (const candidate of candidates) {
+      snapshot.indexUrl = candidate
+      attempted.push(candidate)
+
+      if (!isHttpUrl(candidate)) {
+        lastError = '索引地址必须是 http/https 地址'
+        continue
+      }
+
+      try {
+        const { plugins, generatedAt } = await this.loadIndex(candidate)
+        snapshot.plugins = plugins
+        if (generatedAt) snapshot.generatedAt = generatedAt
+        return snapshot
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error)
+      }
     }
 
-    try {
-      const data = await this.withRequest(async (signal) => {
-        const response = await this.fetchImpl(resolvedIndexUrl, { signal })
-        if (!response.ok) throw new Error(`索引请求失败：HTTP ${response.status}`)
-        const buffer = await this.readBody(response, MAX_INDEX_BYTES)
-        try {
-          return JSON.parse(buffer.toString('utf8')) as unknown
-        } catch {
-          throw new Error('索引 JSON 解析失败')
-        }
-      })
+    snapshot.error =
+      attempted.length > 1
+        ? `${lastError}（已尝试这些索引地址：${attempted.join('、')}）`
+        : lastError
+    return snapshot
+  }
 
-      if (data === null || typeof data !== 'object' || Array.isArray(data)) {
-        throw new Error('索引格式不合法：根节点必须是对象')
+  private async loadIndex(
+    indexUrl: string
+  ): Promise<{ plugins: PluginMarketEntry[]; generatedAt?: string }> {
+    const data = await this.withRequest(async (signal) => {
+      const response = await this.fetchImpl(indexUrl, { signal })
+      if (!response.ok) throw new Error(`索引请求失败：HTTP ${response.status}`)
+      const buffer = await this.readBody(response, MAX_INDEX_BYTES)
+      try {
+        return JSON.parse(buffer.toString('utf8')) as unknown
+      } catch {
+        throw new Error('索引 JSON 解析失败')
       }
-      const record = data as Record<string, unknown>
-      if (record.version !== 1) {
-        throw new Error(`索引版本不支持：${String(record.version)}`)
-      }
-      if (!Array.isArray(record.plugins)) {
-        throw new Error('索引格式不合法：plugins 必须是数组')
-      }
-      if (typeof record.generatedAt === 'string') snapshot.generatedAt = record.generatedAt
+    })
 
-      const plugins: PluginMarketEntry[] = []
-      for (const item of record.plugins) {
-        const parsed = pluginMarketEntrySchema.safeParse(item)
-        if (parsed.success) plugins.push(parsed.data)
-      }
-      snapshot.plugins = plugins
-      return snapshot
-    } catch (error) {
-      snapshot.error = error instanceof Error ? error.message : String(error)
-      return snapshot
+    if (data === null || typeof data !== 'object' || Array.isArray(data)) {
+      throw new Error('索引格式不合法：根节点必须是对象')
+    }
+    const record = data as Record<string, unknown>
+    if (record.version !== 1) {
+      throw new Error(`索引版本不支持：${String(record.version)}`)
+    }
+    if (!Array.isArray(record.plugins)) {
+      throw new Error('索引格式不合法：plugins 必须是数组')
+    }
+
+    const plugins: PluginMarketEntry[] = []
+    for (const item of record.plugins) {
+      const parsed = pluginMarketEntrySchema.safeParse(item)
+      if (parsed.success) plugins.push(parsed.data)
+    }
+
+    return {
+      plugins,
+      generatedAt: typeof record.generatedAt === 'string' ? record.generatedAt : undefined
     }
   }
 
@@ -157,13 +208,7 @@ export class PluginMarketplace {
     let succeeded = false
 
     try {
-      const archive = await this.withRequest(async (signal) => {
-        const response = await this.fetchImpl(entry.downloadUrl, { signal })
-        if (!response.ok) throw new Error(`插件下载失败：HTTP ${response.status}`)
-        return this.readBody(response, this.maxDownloadBytes)
-      })
-      if (entry.sha256) verifySha256(archive, entry.sha256)
-
+      const archive = await this.downloadArchive(entry)
       await writeFile(archivePath, archive)
       await mkdir(extractDir, { recursive: true })
       await extract({
@@ -228,6 +273,27 @@ export class PluginMarketplace {
       }
     }
     return ids.sort()
+  }
+
+  private async downloadArchive(entry: PluginMarketEntry): Promise<Buffer> {
+    const candidates = downloadCandidates(entry)
+    let lastError = '没有可用的下载地址'
+
+    for (const candidate of candidates) {
+      try {
+        const archive = await this.withRequest(async (signal) => {
+          const response = await this.fetchImpl(candidate, { signal })
+          if (!response.ok) throw new Error(`插件下载失败：HTTP ${response.status}`)
+          return this.readBody(response, this.maxDownloadBytes)
+        })
+        if (entry.sha256) verifySha256(archive, entry.sha256)
+        return archive
+      } catch (error) {
+        lastError = error instanceof Error ? error.message : String(error)
+      }
+    }
+
+    throw new Error(`插件下载失败：${lastError}（已尝试 ${candidates.length} 个下载地址）`)
   }
 
   private async withRequest<T>(run: (signal: AbortSignal) => Promise<T>): Promise<T> {

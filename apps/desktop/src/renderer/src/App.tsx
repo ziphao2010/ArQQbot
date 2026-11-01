@@ -13,6 +13,12 @@ type View =
 
 export function App() {
   const [view, setView] = useState<View>({ kind: 'list' })
+  const [marketReturn, setMarketReturn] = useState<View>({ kind: 'list' })
+
+  function openMarket(): void {
+    setMarketReturn(view.kind === 'market' ? { kind: 'list' } : view)
+    setView({ kind: 'market' })
+  }
 
   return (
     <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)] transition-colors duration-300">
@@ -35,7 +41,7 @@ export function App() {
               className={`rounded-full px-4 py-1.5 text-sm ${
                 view.kind === 'market' ? 'bg-white font-medium shadow-sm' : 'text-neutral-500'
               }`}
-              onClick={() => setView({ kind: 'market' })}
+              onClick={openMarket}
             >
               插件市场
             </button>
@@ -59,9 +65,13 @@ export function App() {
           />
         )}
         {view.kind === 'detail' && (
-          <InstanceDetail instanceId={view.id} onBack={() => setView({ kind: 'list' })} />
+          <InstanceDetail
+            instanceId={view.id}
+            onBack={() => setView({ kind: 'list' })}
+            onOpenMarket={openMarket}
+          />
         )}
-        {view.kind === 'market' && <PluginMarket onBack={() => setView({ kind: 'list' })} />}
+        {view.kind === 'market' && <PluginMarket onBack={() => setView(marketReturn)} />}
       </main>
     </div>
   )

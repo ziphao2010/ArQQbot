@@ -7,13 +7,18 @@
 
 ## 1. 索引地址
 
-默认索引由本仓库的 GitHub Actions 每周生成并提交：
+默认索引由本仓库的 GitHub Actions 每周生成并提交。桌面应用按顺序尝试以下两个地址，第一个成功即返回：
 
 ```text
-https://raw.githubusercontent.com/ziphao2010/ArQQbot/master/plugins/index.json
+https://cdn.jsdelivr.net/gh/ziphao2010/ArQQbot@main/plugins/index.json
+https://raw.githubusercontent.com/ziphao2010/ArQQbot/main/plugins/index.json
 ```
 
+优先使用 jsDelivr（访问更快、可缓存），失败时自动回退 GitHub raw。两个地址全部失败时，市场页显示最后一次错误，并列出已经尝试过的索引地址。
+
 索引文件路径为 `plugins/index.json`，构建脚本为 `scripts/build-plugin-index.mjs`。仓库地址变更时只需替换上述 URL 中的 `ziphao2010/ArQQbot`。
+
+通过环境变量 `ARQQBOT_PLUGIN_INDEX_URL` 或构造参数显式指定索引地址时，只尝试该地址，不会回退。
 
 ## 2. 索引 JSON 结构
 
@@ -99,22 +104,30 @@ https://example.com/arqqbot/plugins/index.json
 
 ## 5. 桌面端使用
 
-桌面应用顶部导航提供“插件市场”入口，可从实例列表切换到市场页。
+桌面应用顶部导航提供“插件市场”入口；实例详情的“插件”页签也有“打开插件市场”按钮，返回时回到来源页面。
 
-1. **索引地址**：页面顶部可填写自定义索引地址。留空时使用默认索引；填写的地址保存在本地 `localStorage`（键名 `arqqbot.marketIndexUrl`），清空并刷新后恢复默认。
+1. **索引地址**：页面顶部可填写自定义索引地址。留空时使用默认索引（jsDelivr 优先、GitHub raw 回退）；填写的地址保存在本地 `localStorage`（键名 `arqqbot.marketIndexUrl`），清空并刷新后恢复默认。
 2. **搜索**：搜索框按显示名、描述、插件 ID 与标签过滤条目。
 3. **安装**：卡片上的“安装”会把索引条目交给主进程，下载 tarball 并校验 manifest 与入口文件。安装过程**不执行插件代码**，也不启用插件。
 4. **重启实例**：安装完成后必须重启对应实例，宿主才会扫描到新插件。
 5. **手动启用**：重启后在实例的插件页检查插件信息与配置，确认无误再手动启用。默认不会自动启用。
+
+页面顶部固定提示三步操作：① 安装 → ② 重启实例 → ③ 在实例插件页启用。
 
 ## 6. 安装流程
 
 以下流程同样适用于桌面市场的安装：
 
 1. **下载 tarball**  
-   从索引的 `downloadUrl` 下载 `.tar.gz`。优先使用固定 commit 的地址，而不是分支地址。
+   优先使用索引的 `downloadUrl` 下载 `.tar.gz`。主地址失败且条目同时提供 `repo` 与 `commit` 时，按顺序自动回退：
+
+   1. `downloadUrl`
+   2. `https://github.com/<owner>/<repo>/archive/<commit>.tar.gz`
+   3. `https://api.github.com/repos/<owner>/<repo>/tarball/<commit>`
+
+   每个候选地址都受请求超时与 20MB 大小限制；任一候选下载成功即停止尝试。全部候选失败时安装终止并报告最后一次错误。`repo` 支持 `https://github.com/owner/repo` 与 `git+https://github.com/owner/repo.git` 两种写法。
 2. **校验 SHA-256（可选）**  
-   若索引条目提供 `sha256`，计算下载文件摘要并比对；不一致则终止安装。当前生成器将 `sha256` 置为 `null`。
+   若索引条目提供 `sha256`，计算下载文件摘要并比对；不一致时继续尝试下一个候选地址，全部候选都不匹配则终止安装。当前生成器将 `sha256` 置为 `null`。
 3. **解包到临时目录**  
    解压到用户数据目录之外的临时位置，避免未校验内容直接进入插件目录。
 4. **校验 manifest 与入口**  
@@ -139,7 +152,7 @@ https://example.com/arqqbot/plugins/index.json
 
 ## 8. 失败与回滚
 
-- **下载或摘要失败**：删除临时文件，不改动插件目录。
+- **下载或摘要失败**：删除临时文件，不改动插件目录。索引提供 `repo` + `commit` 时会先尝试 GitHub 回退地址；所有候选失败才终止安装。
 - **manifest / 入口校验失败**：删除临时目录，现有插件保持不变。
 - **复制中断**：清理临时目录，并删除本次创建的不完整目标目录。
 - **覆盖升级**：当前版本不支持覆盖安装；目标目录已存在时直接拒绝。升级需先停止实例、手动删除旧目录，再安装新版本。
