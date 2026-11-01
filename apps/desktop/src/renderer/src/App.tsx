@@ -22,7 +22,7 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--app-text)] transition-colors duration-300">
+    <div className="app-shell min-h-screen text-[var(--app-text)]">
       <header className="app-drag flex items-start justify-between px-10 pt-16">
         <div>
           <h1 className="text-3xl font-semibold tracking-tight">ArQQBot</h1>

@@ -86,6 +86,10 @@ textarea:focus {
     stroke 300ms ease !important;
 }
 
+.app-shell {
+  background-color: var(--app-bg);
+}
+
 .dark .bg-white\/70,
 .dark .bg-white\/60 {
   background-color: var(--app-surface);

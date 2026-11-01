@@ -45,7 +45,7 @@ export function ThemeToggle() {
       type="button"
       className="flex h-9 w-9 items-center justify-center rounded-full bg-black/5 text-neutral-600 transition-colors"
       aria-label={dark ? '切换到浅色模式' : '切换到深色模式'}
-      onClick={() => toggleTheme()}
+      onClick={toggleTheme}
     >
       {dark ? <SunIcon /> : <MoonIcon />}
     </button>

@@ -6,7 +6,7 @@ import { ThemeToggle } from '../src/renderer/src/components/ThemeToggle'
 describe('ThemeToggle', () => {
   beforeEach(() => {
     localStorage.clear()
-    document.documentElement.classList.remove('dark')
+    document.documentElement.classList.remove('dark', 'theme-switching')
     vi.useFakeTimers()
   })
 
@@ -15,10 +15,10 @@ describe('ThemeToggle', () => {
     vi.restoreAllMocks()
     vi.unstubAllGlobals()
     localStorage.clear()
-    document.documentElement.classList.remove('dark')
+    document.documentElement.classList.remove('dark', 'theme-switching')
   })
 
-  it('点击后切换为深色并持久化，再次点击恢复浅色', async () => {
+  it('点击后经过颜色过渡切换为深色并持久化，再次点击恢复浅色', async () => {
     const { unmount } = render(<ThemeToggle />)
 
     await act(async () => {
