@@ -1,6 +1,22 @@
 {
   "version": 1,
-  "generatedAt": "2026-11-01T01:21:12.246Z",
+  "generatedAt": "2026-11-01T01:37:13.341Z",
   "source": "github-topic:arqqbot-plugin",
-  "plugins": []
+  "plugins": [
+    {
+      "id": "hello",
+      "packageName": "arqqbot-plugin-hello",
+      "displayName": "Ping 回复插件",
+      "description": "收到 ping 时被动回复 pong，用于验证插件市场发现与安装链路",
+      "version": "0.1.0",
+      "repo": "https://github.com/ziphao2010/arqqbot-plugin-hello",
+      "commit": "6e3718c0f50507b87cf4b19f61b197f022c2cb16",
+      "downloadUrl": "https://codeload.github.com/ziphao2010/arqqbot-plugin-hello/tar.gz/6e3718c0f50507b87cf4b19f61b197f022c2cb16",
+      "tags": [
+        "arqqbot-plugin"
+      ],
+      "sha256": null,
+      "homepage": "https://github.com/ziphao2010/arqqbot-plugin-hello#readme"
+    }
+  ]
 }
