@@ -14,6 +14,8 @@ export const IPC_CHANNELS = {
   pluginsEnable: 'plugins:enable',
   pluginsDisable: 'plugins:disable',
   pluginsUpdateConfig: 'plugins:update-config',
+  pluginsMarketplace: 'plugins:marketplace',
+  pluginsInstall: 'plugins:install',
   logsSubscribe: 'logs:subscribe',
   logsUnsubscribe: 'logs:unsubscribe',
   logsEntry: 'logs:entry',
@@ -51,6 +53,40 @@ export const updatePluginConfigSchema = z.object({
   pluginId: z.string().min(1),
   config: z.record(z.string(), z.unknown())
 })
+
+const httpUrlSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .refine(
+    (value) => {
+      try {
+        const url = new URL(value)
+        return url.protocol === 'http:' || url.protocol === 'https:'
+      } catch {
+        return false
+      }
+    },
+    { message: '必须是 http/https 地址' }
+  )
+
+export const pluginMarketIndexUrlSchema = z.string().trim().max(2048).optional()
+
+export const pluginMarketEntrySchema = z
+  .object({
+    id: z.string().regex(/^[a-z0-9-]+$/),
+    packageName: z.string().min(1),
+    displayName: z.string().min(1),
+    description: z.string(),
+    version: z.string().min(1),
+    repo: z.string().optional(),
+    commit: z.string().optional(),
+    downloadUrl: httpUrlSchema,
+    homepage: z.string().optional(),
+    tags: z.array(z.string()).optional(),
+    sha256: z.string().nullable().optional()
+  })
+  .passthrough()
 
 export type CreateInstancePayload = z.infer<typeof createInstanceSchema>
 export type UpdateInstancePayload = z.infer<typeof updateInstanceSchema>

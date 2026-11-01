@@ -3,13 +3,16 @@ import {
   IPC_CHANNELS,
   createInstanceSchema,
   idSchema,
+  pluginMarketEntrySchema,
+  pluginMarketIndexUrlSchema,
   qqUpdateIntentsSchema,
   updateInstanceSchema,
   updatePluginConfigSchema
 } from '@arqqbot/shared'
 import type { InstanceManager } from './instance-manager'
+import type { PluginMarketplace } from './plugin-market'
 
-export function registerIpc(manager: InstanceManager): void {
+export function registerIpc(manager: InstanceManager, marketplace: PluginMarketplace): void {
   const subscriptions = new Map<number, () => void>()
 
   ipcMain.handle(IPC_CHANNELS.instancesList, () => manager.list())
@@ -55,6 +58,13 @@ export function registerIpc(manager: InstanceManager): void {
   ipcMain.handle(IPC_CHANNELS.pluginsUpdateConfig, (_event, input: unknown) => {
     const parsed = updatePluginConfigSchema.parse(input)
     return manager.updatePluginConfig(parsed.instanceId, parsed.pluginId, parsed.config)
+  })
+  ipcMain.handle(IPC_CHANNELS.pluginsMarketplace, (_event, indexUrl: unknown) =>
+    marketplace.fetchIndex(pluginMarketIndexUrlSchema.parse(indexUrl))
+  )
+  ipcMain.handle(IPC_CHANNELS.pluginsInstall, (_event, input: unknown) => {
+    const entry = pluginMarketEntrySchema.parse(input)
+    return marketplace.install(entry)
   })
 
   ipcMain.on(IPC_CHANNELS.logsSubscribe, (event, instanceId: unknown) => {

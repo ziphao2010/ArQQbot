@@ -32,6 +32,9 @@ importers:
       react-dom:
         specifier: ^19.1.1
         version: 19.3.1(react@19.3.1)
+      tar:
+        specifier: ^7.5.22
+        version: 7.5.22
       zustand:
         specifier: ^5.0.8
         version: 5.0.16(@types/react@19.3.0)(react@19.3.1)
@@ -59,7 +62,7 @@ importers:
         version: 5.2.0(vite@7.3.7(@types/node@22.20.5)(jiti@2.7.0)(lightningcss@1.32.0))
       electron:
         specifier: latest
-        version: 45.1.0
+        version: 45.2.0
       electron-builder:
         specifier: ^26.0.12
         version: 26.18.0(electron-builder-squirrel-windows@26.18.0)
@@ -1834,8 +1837,8 @@ packages:
     resolution: {integrity: sha512-bO3y10YikuUwUuDUQRM4KfwNkKhnpVO7IPdbsrejwN9/AABJzzTQ4GeHwyzNSrVO+tEH3/Np255a3sVZpZDjvg==}
     engines: {node: '>=8.0.0'}
 
-  electron@45.1.0:
-    resolution: {integrity: sha512-i7qKVAh/KR5v1pf56NhGGX2QYHcdjvLgS7koL6ui50c+zUDGLRunR95nXcTpHPURKOQ4GDBG8BmXiDgOQ8DD0A==}
+  electron@45.2.0:
+    resolution: {integrity: sha512-OLQ7ct4TEbXfIctVwId+3RlWGrHr/hVJdCJqwnFWmfsttWAyHdwUhSvJHr/k6j4K+3HxSWg6agFizEv8IHqEBw==}
     engines: {node: '>= 22.12.0'}
     hasBin: true
 
@@ -4582,7 +4585,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  electron@45.1.0:
+  electron@45.2.0:
     dependencies:
       '@electron-internal/extract-zip': 1.0.8
       '@electron/get': 5.1.0
