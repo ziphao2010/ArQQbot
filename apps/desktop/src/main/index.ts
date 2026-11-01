@@ -18,6 +18,7 @@ function createWindow(): void {
     minWidth: 920,
     minHeight: 620,
     title: 'ArQQBot',
+    backgroundColor: '#f5f5f7',
     titleBarStyle: 'hidden',
     titleBarOverlay: {
       color: '#f5f5f7',

@@ -20,10 +20,13 @@ export const IPC_CHANNELS = {
   logsUnsubscribe: 'logs:unsubscribe',
   logsEntry: 'logs:entry',
   qqCapabilities: 'qq:capabilities',
-  qqUpdateIntents: 'qq:update-intents'
+  qqUpdateIntents: 'qq:update-intents',
+  windowTheme: 'window:theme'
 } as const
 
 const intentSchema = z.enum(QQ_INTENT_NAMES)
+
+export const themeSchema = z.enum(['light', 'dark'])
 
 export const idSchema = z.string().min(1)
 

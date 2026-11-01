@@ -2,10 +2,33 @@
 
 :root {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
-  color: #1d1d1f;
-  background: #f5f5f7;
+  --app-bg: #f5f5f7;
+  --app-text: #1d1d1f;
+  --app-surface: rgba(255, 255, 255, 0.7);
+  --app-surface-soft: rgba(0, 0, 0, 0.05);
+  --app-surface-soft-2: rgba(0, 0, 0, 0.03);
+  --app-surface-soft-3: rgba(0, 0, 0, 0.04);
+  --app-border: rgba(0, 0, 0, 0.05);
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+}
+
+.dark {
+  --app-bg: #0b0b0f;
+  --app-text: #f5f5f7;
+  --app-surface: rgba(24, 24, 28, 0.82);
+  --app-surface-soft: rgba(255, 255, 255, 0.08);
+  --app-surface-soft-2: rgba(255, 255, 255, 0.05);
+  --app-surface-soft-3: rgba(255, 255, 255, 0.07);
+  --app-border: rgba(255, 255, 255, 0.1);
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--app-bg);
+  color: var(--app-text);
 }
 
 body {
@@ -36,4 +59,112 @@ select:focus,
 textarea:focus {
   border-color: rgba(0, 113, 227, 0.5);
   box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.12);
+}
+
+.app-drag {
+  -webkit-app-region: drag;
+}
+
+.app-no-drag {
+  -webkit-app-region: no-drag;
+}
+
+.theme-reveal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  clip-path: circle(150vmax at var(--theme-x) var(--theme-y));
+  animation: theme-reveal 700ms ease-out forwards;
+}
+
+@keyframes theme-reveal {
+  from {
+    clip-path: circle(0 at var(--theme-x) var(--theme-y));
+  }
+  to {
+    clip-path: circle(150vmax at var(--theme-x) var(--theme-y));
+  }
+}
+
+.dark .bg-white\/70,
+.dark .bg-white\/60 {
+  background-color: var(--app-surface);
+}
+
+.dark .bg-white {
+  background-color: #2a2a30;
+}
+
+.dark .bg-black\/5 {
+  background-color: var(--app-surface-soft);
+}
+
+.dark .bg-black\/\[0\.03\] {
+  background-color: var(--app-surface-soft-2);
+}
+
+.dark .bg-black\/\[0\.04\] {
+  background-color: var(--app-surface-soft-3);
+}
+
+.dark .text-neutral-800 {
+  color: #f0f0f2;
+}
+
+.dark .text-neutral-600 {
+  color: #c7c7cc;
+}
+
+.dark .text-neutral-500 {
+  color: #a1a1a6;
+}
+
+.dark .text-neutral-400 {
+  color: #8e8e93;
+}
+
+.dark .ring-black\/5 {
+  --tw-ring-color: var(--app-border);
+}
+
+.dark .border-black\/5 {
+  border-color: var(--app-border);
+}
+
+.dark .bg-red-50 {
+  background-color: rgba(248, 113, 113, 0.12);
+}
+
+.dark .text-red-700,
+.dark .text-red-600 {
+  color: #fca5a5;
+}
+
+.dark .bg-green-50 {
+  background-color: rgba(74, 222, 128, 0.12);
+}
+
+.dark .text-green-700 {
+  color: #86efac;
+}
+
+.dark .text-amber-600 {
+  color: #fcd34d;
+}
+
+.dark .text-\[\#0071e3\] {
+  color: #4da3ff;
+}
+
+.dark input,
+.dark select,
+.dark textarea {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+  color: var(--app-text);
+}
+
+.dark input::placeholder {
+  color: #8e8e93;
 }

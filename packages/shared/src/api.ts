@@ -38,4 +38,7 @@ export interface DesktopApi {
     capabilities(instanceId: string): Promise<QQCapabilitySnapshot>
     updateIntents(instanceId: string, intents: QQIntentName[]): Promise<void>
   }
+  window: {
+    setTheme(theme: 'light' | 'dark'): Promise<void>
+  }
 }
