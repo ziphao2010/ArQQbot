@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import type { Stats } from 'node:fs'
 import { cp, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
@@ -10,6 +11,7 @@ const DEFAULT_INDEX_URL =
   'https://raw.githubusercontent.com/Arooxy/ArQQbot/master/plugins/index.json'
 const DEFAULT_TIMEOUT_MS = 10_000
 const DEFAULT_MAX_DOWNLOAD_BYTES = 20 * 1024 * 1024
+const MAX_INDEX_BYTES = 2 * 1024 * 1024
 const DEFAULT_ENTRY_PATH = 'dist/index.js'
 
 export interface PluginMarketplaceOptions {
@@ -39,8 +41,9 @@ function isSafeArchivePath(entryPath: string): boolean {
   return !entryPath.split(/[\\/]/).some((segment) => segment === '..')
 }
 
-function isFileOrDirectory(entry: ReadEntry): boolean {
-  return entry.type === 'File' || entry.type === 'Directory'
+function isFileOrDirectory(entry: ReadEntry | Stats): boolean {
+  if ('type' in entry) return entry.type === 'File' || entry.type === 'Directory'
+  return entry.isFile() || entry.isDirectory()
 }
 
 async function pathExists(target: string): Promise<boolean> {
@@ -107,9 +110,9 @@ export class PluginMarketplace {
       const data = await this.withRequest(async (signal) => {
         const response = await this.fetchImpl(resolvedIndexUrl, { signal })
         if (!response.ok) throw new Error(`索引请求失败：HTTP ${response.status}`)
-        const text = await response.text()
+        const buffer = await this.readBody(response, MAX_INDEX_BYTES)
         try {
-          return JSON.parse(text) as unknown
+          return JSON.parse(buffer.toString('utf8')) as unknown
         } catch {
           throw new Error('索引 JSON 解析失败')
         }
@@ -119,6 +122,9 @@ export class PluginMarketplace {
         throw new Error('索引格式不合法：根节点必须是对象')
       }
       const record = data as Record<string, unknown>
+      if (record.version !== 1) {
+        throw new Error(`索引版本不支持：${String(record.version)}`)
+      }
       if (!Array.isArray(record.plugins)) {
         throw new Error('索引格式不合法：plugins 必须是数组')
       }
@@ -165,7 +171,7 @@ export class PluginMarketplace {
         cwd: extractDir,
         strip: 1,
         filter: (entryPath, entry) =>
-          isSafeArchivePath(entryPath) && isFileOrDirectory(entry as ReadEntry)
+          isSafeArchivePath(entryPath) && entry !== undefined && isFileOrDirectory(entry)
       })
 
       let pkg: unknown
