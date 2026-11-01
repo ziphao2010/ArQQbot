@@ -2,6 +2,13 @@
   "name": "@arqqbot/desktop",
   "version": "0.1.0",
   "private": true,
+  "description": "ArQQBot 多实例 QQ 官方机器人桌面与插件运行时",
+  "author": {
+    "name": "ArQQBot contributors",
+    "email": "ziphao2010@users.noreply.github.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/ziphao2010/ArQQbot",
   "main": "out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
