@@ -25,6 +25,7 @@ nsis:
   createDesktopShortcut: true
 linux:
   executableName: arqqbot
+  artifactName: ArQQBot-${version}-${arch}.${ext}
   target:
     - AppImage
     - deb
