@@ -28,6 +28,7 @@ describe('ThemeToggle', () => {
 
     expect(document.documentElement.classList.contains('dark')).toBe(true)
     expect(localStorage.getItem('arqqbot.theme')).toBe('dark')
+    expect(document.querySelector('.theme-reveal')).toBeNull()
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button'))

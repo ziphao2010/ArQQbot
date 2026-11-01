@@ -9,7 +9,6 @@
   --app-surface-soft-2: rgba(0, 0, 0, 0.03);
   --app-surface-soft-3: rgba(0, 0, 0, 0.04);
   --app-border: rgba(0, 0, 0, 0.05);
-  --titlebar-height: 40px;
   color-scheme: light;
 }
 
@@ -73,27 +72,18 @@ textarea:focus {
   -webkit-app-region: no-drag;
 }
 
-/* 从原生标题栏下方开始扩散，避免覆盖 Windows 窗口按钮 */
-.theme-reveal {
-  position: fixed;
-  top: var(--titlebar-height);
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 9999;
-  pointer-events: none;
-  clip-path: circle(0 at var(--theme-x) var(--theme-y));
-  will-change: clip-path;
-  animation: theme-reveal 700ms ease-out forwards;
-}
-
-@keyframes theme-reveal {
-  from {
-    clip-path: circle(0 at var(--theme-x) var(--theme-y));
-  }
-  to {
-    clip-path: circle(150vmax at var(--theme-x) var(--theme-y));
-  }
+/* 主题切换只做颜色过渡，不创建任何覆盖层 */
+.theme-switching,
+.theme-switching *,
+.theme-switching *::before,
+.theme-switching *::after {
+  transition:
+    background-color 300ms ease,
+    color 300ms ease,
+    border-color 300ms ease,
+    box-shadow 300ms ease,
+    fill 300ms ease,
+    stroke 300ms ease !important;
 }
 
 .dark .bg-white\/70,

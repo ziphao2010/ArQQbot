@@ -1,12 +1,9 @@
-import { useEffect, useRef, useState, type MouseEvent } from 'react'
+import { useEffect, useState } from 'react'
 
 export type ThemeMode = 'light' | 'dark'
 
 const STORAGE_KEY = 'arqqbot.theme'
-const DARK_BG = '#0b0b0f'
-const LIGHT_BG = '#f5f5f7'
-const SWITCH_DELAY_MS = 300
-const ANIMATION_MS = 700
+const TRANSITION_MS = 350
 
 export function readInitialTheme(): ThemeMode {
   if (typeof window === 'undefined') return 'light'
@@ -23,48 +20,22 @@ export function readInitialTheme(): ThemeMode {
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState<ThemeMode>(readInitialTheme)
-  const overlayRef = useRef<HTMLDivElement | null>(null)
-  const timersRef = useRef<number[]>([])
 
   useEffect(() => {
     window.arqqbot?.window?.setTheme?.(theme)
   }, [theme])
 
-  useEffect(() => {
-    return () => {
-      for (const timer of timersRef.current) window.clearTimeout(timer)
-      timersRef.current = []
-      overlayRef.current?.remove()
-      overlayRef.current = null
-    }
-  }, [])
-
-  function toggleTheme(event: MouseEvent<HTMLButtonElement>): void {
+  function toggleTheme(): void {
     const next: ThemeMode = theme === 'dark' ? 'light' : 'dark'
-    const rect = event.currentTarget.getBoundingClientRect()
-    const x = rect.left + rect.width / 2
-    const y = rect.top + rect.height / 2
+    const root = document.documentElement
 
-    overlayRef.current?.remove()
-    const overlay = document.createElement('div')
-    overlay.className = 'theme-reveal'
-    overlay.style.setProperty('--theme-x', `${x}px`)
-    overlay.style.setProperty('--theme-y', `${y}px`)
-    overlay.style.backgroundColor = next === 'dark' ? DARK_BG : LIGHT_BG
-    document.body.appendChild(overlay)
-    overlayRef.current = overlay
+    root.classList.add('theme-switching')
+    void root.offsetWidth
+    root.classList.toggle('dark', next === 'dark')
+    window.localStorage.setItem(STORAGE_KEY, next)
+    setTheme(next)
 
-    timersRef.current.push(
-      window.setTimeout(() => {
-        document.documentElement.classList.toggle('dark', next === 'dark')
-        window.localStorage.setItem(STORAGE_KEY, next)
-        setTheme(next)
-      }, SWITCH_DELAY_MS),
-      window.setTimeout(() => {
-        overlay.remove()
-        if (overlayRef.current === overlay) overlayRef.current = null
-      }, ANIMATION_MS)
-    )
+    window.setTimeout(() => root.classList.remove('theme-switching'), TRANSITION_MS)
   }
 
   const dark = theme === 'dark'
@@ -74,7 +45,7 @@ export function ThemeToggle() {
       type="button"
       className="flex h-9 w-9 items-center justify-center rounded-full bg-black/5 text-neutral-600 transition-colors"
       aria-label={dark ? '切换到浅色模式' : '切换到深色模式'}
-      onClick={toggleTheme}
+      onClick={() => toggleTheme()}
     >
       {dark ? <SunIcon /> : <MoonIcon />}
     </button>
