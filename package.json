@@ -2,6 +2,23 @@
   "name": "arqqbot",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
+  "author": "ArQQbot contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Arooxy/ArQQbot.git"
+  },
+  "homepage": "https://github.com/Arooxy/ArQQbot#readme",
+  "bugs": {
+    "url": "https://github.com/Arooxy/ArQQbot/issues"
+  },
+  "keywords": [
+    "arqqbot",
+    "qq-bot",
+    "cordis",
+    "electron",
+    "plugin"
+  ],
   "packageManager": "pnpm@11.7.0",
   "engines": { "node": ">=22" },
   "scripts": {
