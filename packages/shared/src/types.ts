@@ -2,6 +2,14 @@ export type InstanceEnv = 'sandbox' | 'production'
 
 export type QQScene = 'c2c' | 'group' | 'guild' | 'dm'
 
+export type QQIntentName =
+  | 'public_messages'
+  | 'interaction'
+  | 'guilds'
+  | 'guild_members'
+  | 'guild_messages'
+  | 'direct_message'
+
 export type InstanceRuntimeState =
   | 'created'
   | 'starting'
@@ -27,6 +35,7 @@ export interface InstanceRecord {
   appId: string
   secretRef: string
   env: InstanceEnv
+  intents: QQIntentName[]
   createdAt: string
   updatedAt: string
 }
@@ -36,6 +45,7 @@ export interface InstanceSummary {
   name: string
   appId: string
   env: InstanceEnv
+  intents: QQIntentName[]
   createdAt: string
   updatedAt: string
   state: InstanceRuntimeState
@@ -107,6 +117,7 @@ export interface CreateInstanceInput {
   appId: string
   appSecret: string
   env: InstanceEnv
+  intents?: QQIntentName[]
 }
 
 export interface UpdateInstanceInput {
@@ -114,6 +125,7 @@ export interface UpdateInstanceInput {
   appId?: string
   appSecret?: string
   env?: InstanceEnv
+  intents?: QQIntentName[]
 }
 
 export interface InstanceStatus {
@@ -137,6 +149,7 @@ export interface WorkerStartConfig {
   appId: string
   appSecret: string
   env: InstanceEnv
+  intents?: QQIntentName[]
   dataDir: string
   catalog: PluginCatalogItem[]
   plugins: PluginRecord[]
@@ -148,6 +161,7 @@ export type WorkerRequest =
   | { type: 'applyPluginConfig'; requestId: string; pluginId: string; config: Record<string, unknown> }
   | { type: 'setPluginEnabled'; requestId: string; pluginId: string; enabled: boolean }
   | { type: 'getStatus'; requestId: string }
+  | { type: 'getCapabilities'; requestId: string }
 
 export type WorkerEvent =
   | { type: 'ready' }

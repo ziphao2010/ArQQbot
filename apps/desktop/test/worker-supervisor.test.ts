@@ -66,6 +66,35 @@ describe('WorkerSupervisor', () => {
     expect(await supervisor.getStatus().catch(() => undefined)).toBeUndefined()
   })
 
+  it('获取能力列表', async () => {
+    const worker = new FakeWorker()
+    const supervisor = new WorkerSupervisor({ spawn: () => worker }, {
+      onLog: vi.fn(),
+      onStatus: vi.fn(),
+      onPluginState: vi.fn(),
+      onExit: vi.fn()
+    })
+
+    const starting = supervisor.start(config)
+    await Promise.resolve()
+    worker.emit('message', { type: 'response', requestId: '1', ok: true })
+    await starting
+
+    const pending = supervisor.getCapabilities()
+    await Promise.resolve()
+    expect(worker.sent[1]).toMatchObject({ type: 'getCapabilities', requestId: '2' })
+    worker.emit('message', {
+      type: 'response',
+      requestId: '2',
+      ok: true,
+      result: [{ id: 'message.send', module: 'message', available: true }]
+    })
+
+    await expect(pending).resolves.toEqual([
+      { id: 'message.send', module: 'message', available: true }
+    ])
+  })
+
   it('Worker 无响应时请求超时', async () => {
     vi.useFakeTimers()
     const worker = new FakeWorker()

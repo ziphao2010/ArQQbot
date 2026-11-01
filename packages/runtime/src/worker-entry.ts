@@ -33,6 +33,10 @@ async function main(): Promise<void> {
     }
   }
 
+  const respondResult = (requestId: string, result: unknown): void => {
+    post({ type: 'response', requestId, ok: true, result })
+  }
+
   port.on('message', (event) => {
     const request = event.data as WorkerRequest
     if (!request || typeof request !== 'object' || !('type' in request)) return
@@ -66,6 +70,11 @@ async function main(): Promise<void> {
     if (request.type === 'getStatus') {
       post({ type: 'status', status: runtime.getStatus() })
       respond(request.requestId)
+      return
+    }
+
+    if (request.type === 'getCapabilities') {
+      respondResult(request.requestId, runtime.adapter.service?.capabilities.list() ?? [])
       return
     }
 

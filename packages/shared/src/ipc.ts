@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { QQ_INTENT_NAMES } from './qq'
 
 export const IPC_CHANNELS = {
   instancesList: 'instances:list',
@@ -15,8 +16,12 @@ export const IPC_CHANNELS = {
   pluginsUpdateConfig: 'plugins:update-config',
   logsSubscribe: 'logs:subscribe',
   logsUnsubscribe: 'logs:unsubscribe',
-  logsEntry: 'logs:entry'
+  logsEntry: 'logs:entry',
+  qqCapabilities: 'qq:capabilities',
+  qqUpdateIntents: 'qq:update-intents'
 } as const
+
+const intentSchema = z.enum(QQ_INTENT_NAMES)
 
 export const idSchema = z.string().min(1)
 
@@ -24,14 +29,21 @@ export const createInstanceSchema = z.object({
   name: z.string().trim().min(1).max(64),
   appId: z.string().trim().min(1),
   appSecret: z.string().min(1),
-  env: z.enum(['sandbox', 'production'])
+  env: z.enum(['sandbox', 'production']),
+  intents: z.array(intentSchema).optional()
 })
 
 export const updateInstanceSchema = z.object({
   name: z.string().trim().min(1).max(64).optional(),
   appId: z.string().trim().min(1).optional(),
   appSecret: z.string().min(1).optional(),
-  env: z.enum(['sandbox', 'production']).optional()
+  env: z.enum(['sandbox', 'production']).optional(),
+  intents: z.array(intentSchema).optional()
+})
+
+export const qqUpdateIntentsSchema = z.object({
+  instanceId: z.string().min(1),
+  intents: z.array(intentSchema)
 })
 
 export const updatePluginConfigSchema = z.object({

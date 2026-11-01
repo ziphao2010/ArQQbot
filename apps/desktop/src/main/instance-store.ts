@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto'
 import { mkdir, readFile, rename, rm, writeFile } from 'node:fs/promises'
 import path from 'node:path'
-import type { InstanceEnv, InstanceRecord, PluginRecord } from '@arqqbot/shared'
+import type { InstanceEnv, InstanceRecord, PluginRecord, QQIntentName } from '@arqqbot/shared'
+import { QQ_DEFAULT_INTENTS } from '@arqqbot/shared'
 
 interface IndexFile {
   instances: string[]
@@ -70,7 +71,12 @@ export class InstanceStore {
   async get(id: string): Promise<InstanceRecord | undefined> {
     const file = this.instanceFile(id)
     try {
-      return await this.readJson<InstanceRecord>(file)
+      const record = await this.readJson<InstanceRecord>(file)
+      if (!record) return undefined
+      if (!Array.isArray(record.intents) || record.intents.length === 0) {
+        record.intents = [...QQ_DEFAULT_INTENTS]
+      }
+      return record
     } catch {
       await rename(file, `${file}.bak`).catch(() => undefined)
       return undefined
@@ -82,6 +88,7 @@ export class InstanceStore {
     appId: string
     secretRef: string
     env: InstanceEnv
+    intents?: QQIntentName[]
   }): Promise<InstanceRecord> {
     const now = new Date().toISOString()
     const record: InstanceRecord = {
@@ -90,6 +97,7 @@ export class InstanceStore {
       appId: input.appId,
       secretRef: input.secretRef,
       env: input.env,
+      intents: input.intents?.length ? [...input.intents] : [...QQ_DEFAULT_INTENTS],
       createdAt: now,
       updatedAt: now
     }
@@ -103,7 +111,7 @@ export class InstanceStore {
 
   async update(
     id: string,
-    patch: Partial<Pick<InstanceRecord, 'name' | 'appId' | 'secretRef' | 'env'>>
+    patch: Partial<Pick<InstanceRecord, 'name' | 'appId' | 'secretRef' | 'env' | 'intents'>>
   ): Promise<InstanceRecord> {
     const record = await this.get(id)
     if (!record) throw new Error(`实例不存在：${id}`)

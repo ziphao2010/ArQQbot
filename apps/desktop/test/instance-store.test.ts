@@ -18,10 +18,15 @@ describe('InstanceStore', () => {
     })
 
     expect((await store.list()).map((item) => item.id)).toEqual([created.id])
-    expect(await store.get(created.id)).toMatchObject({ name: '测试实例', env: 'sandbox' })
+    expect(await store.get(created.id)).toMatchObject({
+      name: '测试实例',
+      env: 'sandbox',
+      intents: ['public_messages']
+    })
 
-    await store.update(created.id, { name: '改名后' })
+    await store.update(created.id, { name: '改名后', intents: ['public_messages', 'interaction'] })
     expect((await store.get(created.id))?.name).toBe('改名后')
+    expect((await store.get(created.id))?.intents).toEqual(['public_messages', 'interaction'])
 
     await store.writePlugins(created.id, [
       { id: 'echo', enabled: true, config: { prefix: '收到：' } }
@@ -32,6 +37,25 @@ describe('InstanceStore', () => {
 
     await store.remove(created.id)
     expect(await store.list()).toEqual([])
+  })
+
+  it('旧 instance.json 缺少 intents 时补默认值', async () => {
+    const root = await mkdtemp(path.join(tmpdir(), 'arqqbot-intents-'))
+    const store = new InstanceStore(root)
+    await store.init()
+    const created = await store.create({
+      name: '旧实例',
+      appId: '10003',
+      secretRef: 'cipher',
+      env: 'sandbox'
+    })
+
+    const file = path.join(root, 'instances', created.id, 'instance.json')
+    const legacy = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>
+    delete legacy.intents
+    await writeFile(file, JSON.stringify(legacy), 'utf8')
+
+    expect((await store.get(created.id))?.intents).toEqual(['public_messages'])
   })
 
   it('损坏的 instance.json 会备份为 .bak 并返回 undefined', async () => {
