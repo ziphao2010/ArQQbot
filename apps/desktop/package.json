@@ -36,7 +36,7 @@
     "@vitejs/plugin-react": "^5.0.2",
     "electron": "latest",
     "electron-builder": "^26.0.12",
-    "electron-vite": "^4.0.0",
+    "electron-vite": "^6.0.0",
     "jsdom": "^26.1.0",
     "tailwindcss": "^4.1.13",
     "typescript": "^5.9.2",
