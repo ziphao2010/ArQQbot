@@ -16,7 +16,8 @@ export function App() {
   const [marketReturn, setMarketReturn] = useState<View>({ kind: 'list' })
 
   function openMarket(): void {
-    setMarketReturn(view.kind === 'market' ? { kind: 'list' } : view)
+    if (view.kind === 'market') return
+    setMarketReturn(view)
     setView({ kind: 'market' })
   }
 
