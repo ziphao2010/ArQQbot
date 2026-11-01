@@ -1,4 +1,4 @@
-import { ipcMain, type WebContents } from 'electron'
+import { BrowserWindow, ipcMain, type WebContents } from 'electron'
 import {
   IPC_CHANNELS,
   createInstanceSchema,
@@ -6,6 +6,7 @@ import {
   pluginMarketEntrySchema,
   pluginMarketIndexUrlSchema,
   qqUpdateIntentsSchema,
+  themeSchema,
   updateInstanceSchema,
   updatePluginConfigSchema
 } from '@arqqbot/shared'
@@ -65,6 +66,16 @@ export function registerIpc(manager: InstanceManager, marketplace: PluginMarketp
   ipcMain.handle(IPC_CHANNELS.pluginsInstall, (_event, input: unknown) => {
     const entry = pluginMarketEntrySchema.parse(input)
     return marketplace.install(entry)
+  })
+
+  ipcMain.handle(IPC_CHANNELS.windowTheme, (event, theme: unknown) => {
+    const nextTheme = themeSchema.parse(theme)
+    const window = BrowserWindow.fromWebContents(event.sender)
+    if (!window) return
+    const background = nextTheme === 'dark' ? '#0b0b0f' : '#f5f5f7'
+    const symbol = nextTheme === 'dark' ? '#f5f5f7' : '#1d1d1f'
+    window.setTitleBarOverlay({ color: background, symbolColor: symbol, height: 40 })
+    window.setBackgroundColor(background)
   })
 
   ipcMain.on(IPC_CHANNELS.logsSubscribe, (event, instanceId: unknown) => {

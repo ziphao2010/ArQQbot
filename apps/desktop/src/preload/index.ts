@@ -43,6 +43,9 @@ const api: DesktopApi = {
       ipcRenderer.invoke(IPC_CHANNELS.qqCapabilities, instanceId),
     updateIntents: (instanceId, intents) =>
       ipcRenderer.invoke(IPC_CHANNELS.qqUpdateIntents, { instanceId, intents })
+  },
+  window: {
+    setTheme: (theme) => ipcRenderer.invoke(IPC_CHANNELS.windowTheme, theme)
   }
 }
 
