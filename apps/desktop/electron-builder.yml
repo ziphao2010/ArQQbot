@@ -23,3 +23,9 @@ nsis:
   oneClick: false
   allowToChangeInstallationDirectory: true
   createDesktopShortcut: true
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Utility
+  maintainer: ArQQBot contributors <ziphao2010@users.noreply.github.com>

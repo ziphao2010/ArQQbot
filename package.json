@@ -25,7 +25,8 @@
     "build": "pnpm --filter arqqbot-plugin-echo build && pnpm --filter @arqqbot/runtime build && pnpm --filter @arqqbot/desktop build",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck",
-    "package:win": "pnpm build && pnpm --filter @arqqbot/desktop exec electron-builder --win nsis"
+    "package:win": "pnpm build && pnpm --filter @arqqbot/desktop exec electron-builder --win nsis",
+    "desktop:portable": "pnpm build && pnpm --filter @arqqbot/desktop exec electron-builder --dir --config.directories.output=release-local && node scripts/launch-portable.mjs"
   },
   "devDependencies": {
     "typescript": "^5.9.2",
