@@ -2,7 +2,7 @@
 
 A multi-instance QQ official bot desktop runtime with a Cordis plugin ecosystem.
 
-[![CI](https://github.com/Arooxy/ArQQbot/actions/workflows/ci.yml/badge.svg)](https://github.com/Arooxy/ArQQbot/actions/workflows/ci.yml)
+[![CI](https://github.com/ziphao2010/ArQQbot/actions/workflows/ci.yml/badge.svg)](https://github.com/ziphao2010/ArQQbot/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](https://nodejs.org/)
 [![GitHub topic](https://img.shields.io/badge/topic-arqqbot--plugin-blue.svg)](https://github.com/topics/arqqbot-plugin)

@@ -4,7 +4,7 @@
 
 请通过 GitHub Security Advisories 私下报告漏洞：
 
-<https://github.com/Arooxy/ArQQbot/security/advisories/new>
+<https://github.com/ziphao2010/ArQQbot/security/advisories/new>
 
 不要在公开 Issue、讨论区或 PR 中披露未修复的漏洞细节、利用代码或受影响的用户数据。
 

@@ -6,11 +6,11 @@
   "author": "ArQQbot contributors",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Arooxy/ArQQbot.git"
+    "url": "git+https://github.com/ziphao2010/ArQQbot.git"
   },
-  "homepage": "https://github.com/Arooxy/ArQQbot#readme",
+  "homepage": "https://github.com/ziphao2010/ArQQbot#readme",
   "bugs": {
-    "url": "https://github.com/Arooxy/ArQQbot/issues"
+    "url": "https://github.com/ziphao2010/ArQQbot/issues"
   },
   "keywords": [
     "arqqbot",

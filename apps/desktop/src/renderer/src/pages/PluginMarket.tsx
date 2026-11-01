@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import type { PluginMarketEntry, PluginMarketSnapshot } from '@arqqbot/shared'
 
 const STORAGE_KEY = 'arqqbot.marketIndexUrl'
-const DEFAULT_INDEX_URL = 'https://raw.githubusercontent.com/Arooxy/ArQQbot/master/plugins/index.json'
+const DEFAULT_INDEX_URL = 'https://raw.githubusercontent.com/ziphao2010/ArQQbot/master/plugins/index.json'
 
 interface PluginMarketProps {
   onBack(): void
