@@ -78,6 +78,7 @@ pnpm package:win
 - 市场与发现机制：[docs/plugin-marketplace.md](docs/plugin-marketplace.md)
 - 插件索引：[plugins/index.json](plugins/index.json)
 - 插件模板：[plugin-template/](plugin-template/)
+- 桌面应用内置插件市场页（发现 + 安装）
 - 社区插件使用 GitHub topic **[`arqqbot-plugin`](https://github.com/topics/arqqbot-plugin)** 聚合
 
 社区插件包名建议使用 `arqqbot-plugin-*`，并在 `package.json` 的 `keywords` 中包含 `arqqbot-plugin`。内置插件使用 `@arqqbot/plugin-*` 命名。
