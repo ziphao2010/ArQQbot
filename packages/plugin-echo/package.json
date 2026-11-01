@@ -43,7 +43,7 @@
     "@arqqbot/shared": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "^22.10.0",
+    "@types/node": "^26.6.6",
     "cordis": "4.0.0-rc.12",
     "tsup": "^8.5.0",
     "typescript": "^5.9.2",
