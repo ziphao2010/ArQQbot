@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import type { PluginMarketEntry, PluginMarketSnapshot } from '@arqqbot/shared'
 
 const STORAGE_KEY = 'arqqbot.marketIndexUrl'
-const DEFAULT_INDEX_URL = 'https://raw.githubusercontent.com/ziphao2010/ArQQbot/master/plugins/index.json'
+const DEFAULT_INDEX_URL =
+  'https://cdn.jsdelivr.net/gh/ziphao2010/ArQQbot@main/plugins/index.json'
 
 interface PluginMarketProps {
   onBack(): void
@@ -84,6 +85,9 @@ export function PluginMarket({ onBack }: PluginMarketProps) {
             <p className="mt-1 text-sm text-neutral-500">
               从插件索引发现社区插件。安装只校验 manifest 与入口，不会自动启用。
             </p>
+            <p className="mt-1 text-xs text-neutral-400">
+              使用步骤：① 安装 → ② 重启实例 → ③ 在实例插件页启用
+            </p>
           </div>
           {snapshot?.installedIds && (
             <span className="shrink-0 text-xs text-neutral-500">
@@ -95,7 +99,7 @@ export function PluginMarket({ onBack }: PluginMarketProps) {
         <div className="mt-5 flex flex-col gap-2 md:flex-row">
           <input
             className="flex-1 rounded-full bg-black/5 px-4 py-2 text-sm"
-            placeholder={DEFAULT_INDEX_URL}
+            placeholder="默认使用 jsDelivr 索引，失败时自动回退 GitHub raw；也可填写自定义索引地址"
             value={indexUrl}
             onChange={(event) => setIndexUrl(event.target.value)}
           />
@@ -107,6 +111,7 @@ export function PluginMarket({ onBack }: PluginMarketProps) {
             刷新
           </button>
         </div>
+        <p className="mt-2 text-xs text-neutral-400">默认索引：{DEFAULT_INDEX_URL}</p>
 
         <div className="mt-3 flex flex-col gap-2 md:flex-row md:items-center">
           <input

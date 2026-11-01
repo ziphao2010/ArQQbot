@@ -42,9 +42,10 @@ type TabId = (typeof TABS)[number]['id']
 interface InstanceDetailProps {
   instanceId: string
   onBack(): void
+  onOpenMarket?: () => void
 }
 
-export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
+export function InstanceDetail({ instanceId, onBack, onOpenMarket }: InstanceDetailProps) {
   const [tab, setTab] = useState<TabId>('overview')
   const [status, setStatus] = useState<InstanceStatus>()
   const [plugins, setPlugins] = useState<PluginSummary[]>([])
@@ -264,6 +265,24 @@ export function InstanceDetail({ instanceId, onBack }: InstanceDetailProps) {
 
       {tab === 'plugins' && (
         <div className="space-y-4">
+          <div className="rounded-3xl bg-white/70 p-6 shadow-sm ring-1 ring-black/5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="font-semibold">从插件市场安装</h3>
+                <p className="mt-1 text-sm text-neutral-500">
+                  云端发现和下载社区插件；安装后需重启实例并在本页启用
+                </p>
+              </div>
+              {onOpenMarket && (
+                <button
+                  className="shrink-0 rounded-full bg-[#0071e3] px-4 py-2 text-sm font-medium text-white"
+                  onClick={onOpenMarket}
+                >
+                  打开插件市场
+                </button>
+              )}
+            </div>
+          </div>
           {plugins.length === 0 && (
             <div className="rounded-3xl bg-white/70 p-8 text-sm text-neutral-500">
               未发现插件。请确认内置插件已构建并位于 `resources/plugins`。

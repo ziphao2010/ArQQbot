@@ -221,4 +221,58 @@ describe('PluginMarketplace', () => {
     expect(snapshot.plugins).toEqual([])
     expect(snapshot.installedIds).toEqual([])
   })
+
+  it('默认索引失败时回退到 GitHub raw 地址', async () => {
+    const rootDir = await makeTempDir('arqqbot-market-root-')
+    const rawUrl = 'https://raw.githubusercontent.com/ziphao2010/ArQQbot/main/plugins/index.json'
+    const index = {
+      version: 1,
+      generatedAt: '2026-11-01T00:00:00.000Z',
+      source: 'github-topic:arqqbot-plugin',
+      plugins: []
+    }
+
+    const fetchImpl = (async (input: unknown) => {
+      const url = String(input)
+      if (url === rawUrl) {
+        return new Response(JSON.stringify(index), {
+          status: 200,
+          headers: { 'content-type': 'application/json' }
+        })
+      }
+      return new Response('', { status: 404 })
+    }) as unknown as typeof fetch
+
+    const marketplace = new PluginMarketplace({ rootDir, fetchImpl })
+    const snapshot = await marketplace.fetchIndex()
+
+    expect(snapshot.indexUrl).toBe(rawUrl)
+    expect(snapshot.plugins).toEqual([])
+    expect(snapshot.generatedAt).toBe('2026-11-01T00:00:00.000Z')
+    expect(snapshot.error).toBeUndefined()
+  })
+
+  it('主下载地址失败时回退到 GitHub archive 地址', async () => {
+    const rootDir = await makeTempDir('arqqbot-market-root-')
+    const fixtureDir = await makeTempDir('arqqbot-market-fixture-')
+    const commit = '0123456789abcdef0123456789abcdef01234567'
+    const primaryUrl = 'https://example.com/plugin-example.tar.gz'
+    const archiveUrl = `https://github.com/owner/arqqbot-plugin-example/archive/${commit}.tar.gz`
+    const archive = await makeTarball(fixtureDir, 'example')
+    const entry = entryFor('example', primaryUrl, { commit })
+
+    const fetchImpl = (async (input: unknown) => {
+      const url = String(input)
+      if (url === archiveUrl) return new Response(new Uint8Array(archive))
+      return new Response('', { status: 502 })
+    }) as unknown as typeof fetch
+
+    const marketplace = new PluginMarketplace({ rootDir, fetchImpl })
+    await marketplace.install(entry)
+
+    expect(await marketplace.listInstalled()).toEqual(['example'])
+    expect(
+      await readFile(path.join(rootDir, 'example', 'dist', 'index.js'), 'utf8')
+    ).toContain('export const plugin')
+  })
 })
