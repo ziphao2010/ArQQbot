@@ -11,7 +11,7 @@
   "dependencies": {
     "@arqqbot/shared": "workspace:*",
     "cordis": "4.0.0-rc.12",
-    "ws": "^8.18.3"
+    "ws": "^8.22.1"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
