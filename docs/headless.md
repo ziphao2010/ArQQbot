@@ -84,9 +84,6 @@ arqqbot instance remove <id>
 
 arqqbot plugin list <id>
 arqqbot plugin enable <id> echo
-arqqbot plugin config <id> persona-distill --file config.json
-arqqbot market search persona
-arqqbot market install persona-distill
 
 arqqbot logs <id>            # 实时日志，Ctrl+C 退出
 arqqbot --json ...           # 任意命令输出 JSON，便于脚本处理

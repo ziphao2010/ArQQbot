@@ -22,9 +22,7 @@ async function main() {
     ['packages/runtime/dist/worker-entry.cjs', 'runtime/worker-entry.cjs'],
     ['apps/desktop/out/renderer-web', 'web'],
     ['packages/plugin-echo/package.json', 'builtin/plugin-echo/package.json'],
-    ['packages/plugin-echo/dist', 'builtin/plugin-echo/dist'],
-    ['packages/plugin-persona-distill/package.json', 'builtin/plugin-persona-distill/package.json'],
-    ['packages/plugin-persona-distill/dist', 'builtin/plugin-persona-distill/dist']
+    ['packages/plugin-echo/dist', 'builtin/plugin-echo/dist']
   ]
   for (const [from, to] of copies) {
     await cp(path.join(root, from), path.join(target, to), { recursive: true })

@@ -131,7 +131,6 @@ jobs:
       - name: Build headless server bundle
         run: |
           pnpm --filter arqqbot-plugin-echo build
-          pnpm --filter arqqbot-plugin-persona-distill build
           pnpm --filter @arqqbot/runtime build
           pnpm --filter @arqqbot/desktop build:web
           pnpm --filter @arqqbot/server build

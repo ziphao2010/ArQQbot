@@ -115,22 +115,8 @@ arqqbot instance list
 arqqbot instance create --name 我的BOT --app-id xxx --env sandbox --secret-stdin
 arqqbot instance start <id>
 arqqbot plugin list <id>
-arqqbot plugin enable <id> persona-distill
-arqqbot plugin config <id> persona-distill --file config.json
-arqqbot market search persona
 arqqbot logs <id>
 ```
-
-## 人格蒸馏插件
-
-`packages/plugin-persona-distill` 基于 `packages/persona-core` 实现分层记忆：
-
-- **个人记忆（全局）**：人格自己的经历、偏好与口头禅，来自首次语料蒸馏与后续聊天整理。
-- **会话记忆**：每个会话的最近聊天与滚动摘要。
-- **用户印象**：跨会话累积的、TA 对你的认识与关系变化。
-- **强沉浸**：默认以本人第一人称回应，不自称 AI；只有被直接追问身份时才承认是人格模拟。
-
-安装后启用插件，在实例插件配置中填写模型接口即可；命令见 [插件 README](packages/plugin-persona-distill/README.md)。
 
 ## 安全说明
 
